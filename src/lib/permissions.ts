@@ -41,3 +41,7 @@ export function canArchiveTask(profile: Profile | null | undefined, task: TaskWi
 
   return task.creator_id === profile.id || task.owner_id === profile.id || isTaskAssignee(profile, task)
 }
+
+export function canManageCategories(profile: Profile | null | undefined) {
+  return isAdmin(profile)
+}

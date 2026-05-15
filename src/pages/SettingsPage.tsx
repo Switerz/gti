@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ShieldAlert, Trash2, UserCog } from 'lucide-react'
+import { Pencil, ShieldAlert, Tag, Trash2, UserCog } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -30,9 +30,15 @@ import {
   useRemoveAllowlistEntry,
   useUpdateAllowlistEntry,
 } from '@/hooks/useAllowlist'
+import {
+  useCategoriesAdmin,
+  useCreateCategory,
+  useRemoveCategory,
+  useUpdateCategory,
+} from '@/hooks/useCategories'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
-import { canManageAllowlist } from '@/lib/permissions'
-import type { AllowedEmail, UserRole } from '@/types/domain'
+import { canManageAllowlist, canManageCategories } from '@/lib/permissions'
+import type { AllowedEmail, Category, UserRole } from '@/types/domain'
 
 import { PageHeader } from './PageHeader'
 
@@ -306,11 +312,264 @@ function AllowlistSection() {
   )
 }
 
+// ── Category row ──────────────────────────────────────────────────────────────
+
+function CategoryRow({ category }: { category: Category }) {
+  const updateCategory = useUpdateCategory()
+  const removeCategory = useRemoveCategory()
+  const [editing, setEditing] = useState(false)
+  const [editName, setEditName] = useState(category.name)
+  const [editColor, setEditColor] = useState(category.color ?? '#6366f1')
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
+  async function handleSave() {
+    if (!editName.trim()) return
+    await updateCategory.mutateAsync({ id: category.id, name: editName, color: editColor })
+    setEditing(false)
+  }
+
+  return (
+    <tr className="group border-b last:border-0 transition-colors hover:bg-muted/30">
+      <td className="px-4 py-3">
+        {editing ? (
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={editColor}
+              onChange={(e) => setEditColor(e.target.value)}
+              className="h-7 w-7 cursor-pointer rounded border"
+              title="Cor da categoria"
+            />
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSave()
+                if (e.key === 'Escape') { setEditName(category.name); setEditing(false) }
+              }}
+              className="h-7 w-44 text-sm"
+              autoFocus
+            />
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span
+              className="inline-block h-3 w-3 rounded-full"
+              style={{ backgroundColor: category.color ?? '#6366f1' }}
+            />
+            <span className="text-sm font-medium">{category.name}</span>
+          </div>
+        )}
+      </td>
+      <td className="px-4 py-3 text-xs text-muted-foreground">{category.slug}</td>
+      <td className="px-4 py-3">
+        <button
+          onClick={() => updateCategory.mutate({ id: category.id, active: !category.active })}
+          className={`inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            category.active ? 'bg-primary' : 'bg-muted'
+          }`}
+          title={category.active ? 'Desativar' : 'Ativar'}
+        >
+          <span
+            className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${
+              category.active ? 'translate-x-5' : 'translate-x-0.5'
+            }`}
+          />
+        </button>
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-1">
+          {editing ? (
+            <>
+              <Button
+                size="sm"
+                variant="default"
+                className="h-6 px-2 text-xs"
+                onClick={handleSave}
+                disabled={updateCategory.isPending}
+              >
+                Salvar
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 px-2 text-xs"
+                onClick={() => { setEditName(category.name); setEditing(false) }}
+              >
+                Cancelar
+              </Button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => { setEditName(category.name); setEditColor(category.color ?? '#6366f1'); setEditing(true) }}
+                className="invisible rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground group-hover:visible"
+                title="Editar"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setConfirmOpen(true)}
+                className="invisible rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-destructive group-hover:visible"
+                title="Remover"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </>
+          )}
+        </div>
+      </td>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remover categoria?</DialogTitle>
+            <DialogDescription>
+              <strong>{category.name}</strong> será removida permanentemente. Tarefas vinculadas
+              perdem a categoria. Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                await removeCategory.mutateAsync(category.id)
+                setConfirmOpen(false)
+              }}
+              disabled={removeCategory.isPending}
+            >
+              Remover
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </tr>
+  )
+}
+
+// ── Add category form ─────────────────────────────────────────────────────────
+
+function AddCategoryForm() {
+  const createCategory = useCreateCategory()
+  const [name, setName] = useState('')
+  const [color, setColor] = useState('#6366f1')
+  const [error, setError] = useState('')
+
+  async function handleAdd() {
+    if (!name.trim()) { setError('Informe um nome.'); return }
+    await createCategory.mutateAsync({ name, color })
+    setName('')
+    setColor('#6366f1')
+    setError('')
+  }
+
+  return (
+    <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-muted/20 p-4">
+      <div className="flex items-end gap-2">
+        <div className="space-y-1.5">
+          <Label className="text-xs">Cor</Label>
+          <input
+            type="color"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+            className="h-8 w-10 cursor-pointer rounded border"
+            title="Escolher cor"
+          />
+        </div>
+        <div className="min-w-[200px] flex-1 space-y-1.5">
+          <Label htmlFor="cat-name" className="text-xs">Nome</Label>
+          <Input
+            id="cat-name"
+            placeholder="Ex: Manutenção, Compliance…"
+            value={name}
+            onChange={(e) => { setName(e.target.value); setError('') }}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleAdd() }}
+            className="h-8 text-sm"
+          />
+          {error && <p className="text-xs text-destructive">{error}</p>}
+        </div>
+      </div>
+      <Button size="sm" onClick={handleAdd} disabled={createCategory.isPending}>
+        {createCategory.isPending ? 'Criando…' : 'Criar categoria'}
+      </Button>
+    </div>
+  )
+}
+
+// ── Category section ──────────────────────────────────────────────────────────
+
+function CategorySection() {
+  const { data: categories = [], isLoading } = useCategoriesAdmin()
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Tag className="h-4 w-4" />
+          Categorias
+        </CardTitle>
+        <CardDescription>
+          Categorias organizam as tarefas. Categorias inativas não aparecem nos seletores.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <AddCategoryForm />
+
+        <Separator />
+
+        {isLoading ? (
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        ) : categories.length === 0 ? (
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            Nenhuma categoria cadastrada.
+          </p>
+        ) : (
+          <div className="overflow-hidden rounded-lg border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/40">
+                  {['Categoria', 'Slug', 'Ativa', ''].map((h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((c) => (
+                  <CategoryRow key={c.id} category={c} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground">
+          {categories.length} categoria{categories.length !== 1 ? 's' : ''} ·{' '}
+          {categories.filter((c) => c.active).length} ativa
+          {categories.filter((c) => c.active).length !== 1 ? 's' : ''}
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export function SettingsPage() {
   const { data: currentProfile } = useCurrentProfile()
   const isAdmin = canManageAllowlist(currentProfile)
+  const canCategories = canManageCategories(currentProfile)
 
   return (
     <section className="space-y-6">
@@ -332,6 +591,8 @@ export function SettingsPage() {
             </CardContent>
           </Card>
         )}
+
+        {canCategories && <CategorySection />}
       </div>
     </section>
   )
