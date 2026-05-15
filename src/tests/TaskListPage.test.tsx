@@ -32,13 +32,9 @@ vi.mock('@/hooks/useTasks', () => ({
   useTasks: vi.fn(() => ({ data: [], isLoading: false, isError: false })),
 }))
 
-// TaskCreateDrawer and TaskEditDrawer are heavy — stub them
-vi.mock('@/components/tasks/TaskCreateDrawer', () => ({
-  TaskCreateDrawer: () => null,
-}))
-
-vi.mock('@/components/tasks/TaskEditDrawer', () => ({
-  TaskEditDrawer: () => null,
+// TaskFormDrawer is heavy — stub it
+vi.mock('@/components/tasks/TaskFormDrawer', () => ({
+  TaskFormDrawer: () => null,
 }))
 
 // Radix UI Select throws for value="" in dev/jsdom — use native selects in tests

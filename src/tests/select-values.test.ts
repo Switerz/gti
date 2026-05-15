@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 const filesWithSelects = [
   'src/components/kanban/TeamBoardFilters.tsx',
   'src/components/kanban/KanbanFilters.tsx',
-  'src/components/tasks/TaskEditDrawer.tsx',
+  'src/components/tasks/TaskFormDrawer.tsx',
   'src/components/tasks/detail/TaskSidebar.tsx',
   'src/pages/ProjectsPage.tsx',
   'src/pages/TaskListPage.tsx',

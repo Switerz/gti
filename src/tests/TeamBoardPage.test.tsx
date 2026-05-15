@@ -42,12 +42,8 @@ vi.mock('@/hooks/useProjects', () => ({
   useProjects: () => ({ data: [{ id: 'project-1', name: 'Projeto' }] }),
 }))
 
-vi.mock('@/components/tasks/TaskCreateDrawer', () => ({
-  TaskCreateDrawer: () => null,
-}))
-
-vi.mock('@/components/tasks/TaskEditDrawer', () => ({
-  TaskEditDrawer: () => null,
+vi.mock('@/components/tasks/TaskFormDrawer', () => ({
+  TaskFormDrawer: () => null,
 }))
 
 vi.mock('@/components/kanban/KanbanBoard', () => ({

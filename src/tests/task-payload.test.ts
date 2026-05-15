@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildCreateTaskPayload,
+  buildEditTaskDefaults,
   buildTaskAssigneeRows,
   buildUpdateTaskPayload,
   getCreateTaskDefaults,
 } from '@/features/tasks/task-payload'
-import type { TaskFormValues, TaskStatus } from '@/types/domain'
+import type { Profile, TaskFormValues, TaskStatus, TaskWithRelations } from '@/types/domain'
 
 const todoStatus: TaskStatus = {
   id: 'status-todo',
@@ -24,6 +25,46 @@ const doneStatus: TaskStatus = {
   name: 'Concluido',
   slug: 'done',
   is_final: true,
+}
+
+const baseProfile: Profile = {
+  id: 'user-1',
+  full_name: 'Alice',
+  email: 'alice@test.com',
+  role: 'admin',
+  active: true,
+  avatar_url: null,
+  created_at: '2026-01-01T00:00:00Z',
+}
+
+function makeTask(overrides: Partial<TaskWithRelations> = {}): TaskWithRelations {
+  return {
+    id: 'task-1',
+    title: 'Tarefa teste',
+    description: null,
+    status_id: todoStatus.id,
+    owner_id: 'user-1',
+    creator_id: 'user-1',
+    category_id: null,
+    project_id: null,
+    priority: 'high',
+    start_date: '2026-05-01',
+    due_date: '2026-05-31',
+    completed_at: null,
+    archived_at: null,
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+    position: 0,
+    status: todoStatus,
+    category: null,
+    project: null,
+    creator: baseProfile,
+    owner: baseProfile,
+    assignees: [],
+    comments: [],
+    checklist_items: [],
+    ...overrides,
+  }
 }
 
 const baseValues: TaskFormValues = {
@@ -97,5 +138,46 @@ describe('task payload helpers', () => {
       status_id: 'status-todo',
       completed_at: null,
     })
+  })
+})
+
+describe('buildEditTaskDefaults', () => {
+  it('maps task fields to form values', () => {
+    const defaults = buildEditTaskDefaults(makeTask())
+    expect(defaults).toMatchObject({
+      title: 'Tarefa teste',
+      priority: 'high',
+      statusId: todoStatus.id,
+      ownerId: 'user-1',
+      startDate: '2026-05-01',
+      dueDate: '2026-05-31',
+    })
+  })
+
+  it('excludes owner from additional assignees list', () => {
+    const task = makeTask({
+      owner_id: 'user-1',
+      assignees: [
+        { profile: { ...baseProfile, id: 'user-1' } },
+        { profile: { ...baseProfile, id: 'user-2' } },
+      ],
+    })
+    expect(buildEditTaskDefaults(task).assigneeIds).toEqual(['user-2'])
+  })
+
+  it('returns empty assigneeIds when task has no extra assignees', () => {
+    expect(buildEditTaskDefaults(makeTask()).assigneeIds).toEqual([])
+  })
+
+  it('coerces null description to empty string', () => {
+    expect(buildEditTaskDefaults(makeTask({ description: null })).description).toBe('')
+  })
+
+  it('coerces null category_id to empty string', () => {
+    expect(buildEditTaskDefaults(makeTask({ category_id: null })).categoryId).toBe('')
+  })
+
+  it('coerces null project_id to empty string', () => {
+    expect(buildEditTaskDefaults(makeTask({ project_id: null })).projectId).toBe('')
   })
 })

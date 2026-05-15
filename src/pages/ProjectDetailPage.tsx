@@ -6,8 +6,7 @@ import { Link, useParams } from 'react-router-dom'
 import { KanbanBoard } from '@/components/kanban/KanbanBoard'
 import { ErrorState } from '@/components/shared/ErrorState'
 import { LoadingState } from '@/components/shared/LoadingState'
-import { TaskCreateDrawer } from '@/components/tasks/TaskCreateDrawer'
-import { TaskEditDrawer } from '@/components/tasks/TaskEditDrawer'
+import { TaskFormDrawer } from '@/components/tasks/TaskFormDrawer'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
@@ -211,7 +210,7 @@ export function ProjectDetailPage() {
       )}
 
       {currentProfile && (
-        <TaskCreateDrawer
+        <TaskFormDrawer
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
           currentProfile={currentProfile}
@@ -220,7 +219,7 @@ export function ProjectDetailPage() {
       )}
 
       {currentProfile && editingTask && (
-        <TaskEditDrawer
+        <TaskFormDrawer
           task={editingTask}
           open={!!editingTask}
           onOpenChange={(v) => { if (!v) setEditingTask(null) }}

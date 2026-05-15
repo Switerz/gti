@@ -7,8 +7,7 @@ import {
   TeamBoardFilters,
   type TeamBoardFilterState,
 } from '@/components/kanban/TeamBoardFilters'
-import { TaskCreateDrawer } from '@/components/tasks/TaskCreateDrawer'
-import { TaskEditDrawer } from '@/components/tasks/TaskEditDrawer'
+import { TaskFormDrawer } from '@/components/tasks/TaskFormDrawer'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { filterTasksForTeamBoard, hasActiveTeamFilters } from '@/features/tasks/team-board-filters'
@@ -121,7 +120,7 @@ export function TeamBoardPage() {
       )}
 
       {currentProfile && (
-        <TaskCreateDrawer
+        <TaskFormDrawer
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
           currentProfile={currentProfile}
@@ -129,7 +128,7 @@ export function TeamBoardPage() {
       )}
 
       {currentProfile && editingTask && (
-        <TaskEditDrawer
+        <TaskFormDrawer
           task={editingTask}
           open={!!editingTask}
           onOpenChange={(v) => { if (!v) setEditingTask(null) }}

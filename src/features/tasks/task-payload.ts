@@ -1,4 +1,4 @@
-import type { TaskFormValues, TaskStatus } from '@/types/domain'
+import type { TaskFormValues, TaskStatus, TaskWithRelations } from '@/types/domain'
 
 export function getCreateTaskDefaults(currentProfileId: string, statuses: TaskStatus[]): TaskFormValues {
   const initialStatus =
@@ -16,6 +16,22 @@ export function getCreateTaskDefaults(currentProfileId: string, statuses: TaskSt
     projectId: '',
     startDate: '',
     dueDate: '',
+  }
+}
+
+export function buildEditTaskDefaults(task: TaskWithRelations): TaskFormValues {
+  const assigneeProfileIds = task.assignees.map((a) => a.profile.id)
+  return {
+    title: task.title,
+    description: task.description ?? '',
+    statusId: task.status_id,
+    ownerId: task.owner_id ?? '',
+    assigneeIds: assigneeProfileIds.filter((id) => id !== task.owner_id),
+    categoryId: task.category_id ?? '',
+    projectId: task.project_id ?? '',
+    priority: task.priority,
+    startDate: task.start_date ?? '',
+    dueDate: task.due_date ?? '',
   }
 }
 

@@ -4,8 +4,7 @@ import { Plus } from 'lucide-react'
 
 import { KanbanBoard } from '@/components/kanban/KanbanBoard'
 import { KanbanFilters } from '@/components/kanban/KanbanFilters'
-import { TaskCreateDrawer } from '@/components/tasks/TaskCreateDrawer'
-import { TaskEditDrawer } from '@/components/tasks/TaskEditDrawer'
+import { TaskFormDrawer } from '@/components/tasks/TaskFormDrawer'
 import { Button } from '@/components/ui/button'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
 import { useMyTasks } from '@/hooks/useTasks'
@@ -74,7 +73,7 @@ export function MyBoardPage() {
       )}
 
       {currentProfile && (
-        <TaskCreateDrawer
+        <TaskFormDrawer
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
           currentProfile={currentProfile}
@@ -82,7 +81,7 @@ export function MyBoardPage() {
       )}
 
       {currentProfile && editingTask && (
-        <TaskEditDrawer
+        <TaskFormDrawer
           task={editingTask}
           open={!!editingTask}
           onOpenChange={(v) => { if (!v) setEditingTask(null) }}

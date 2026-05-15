@@ -3,9 +3,8 @@ import { useState } from 'react'
 import { ArrowUpDown, ChevronDown, ChevronUp, Plus, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import { TaskCreateDrawer } from '@/components/tasks/TaskCreateDrawer'
+import { TaskFormDrawer } from '@/components/tasks/TaskFormDrawer'
 import { TaskDueDateBadge } from '@/components/tasks/TaskDueDateBadge'
-import { TaskEditDrawer } from '@/components/tasks/TaskEditDrawer'
 import { TaskPriorityBadge } from '@/components/tasks/TaskPriorityBadge'
 import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge'
 import { ErrorState } from '@/components/shared/ErrorState'
@@ -265,7 +264,7 @@ export function TaskListPage() {
       )}
 
       {currentProfile && (
-        <TaskCreateDrawer
+        <TaskFormDrawer
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
           currentProfile={currentProfile}
@@ -273,7 +272,7 @@ export function TaskListPage() {
       )}
 
       {currentProfile && editingTask && (
-        <TaskEditDrawer
+        <TaskFormDrawer
           task={editingTask}
           open={!!editingTask}
           onOpenChange={(v) => { if (!v) setEditingTask(null) }}
