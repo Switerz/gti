@@ -7,5 +7,6 @@ export function useTask(id: string | undefined) {
     queryKey: ['tasks', id],
     queryFn: () => taskService.getById(id!),
     enabled: !!id,
+    staleTime: 30_000,
   })
 }

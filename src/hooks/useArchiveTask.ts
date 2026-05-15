@@ -8,8 +8,9 @@ export function useArchiveTask(actorId: string) {
 
   return useMutation({
     mutationFn: (taskId: string) => taskService.archive(taskId, actorId),
-    onSuccess: () => {
+    onSuccess: (_data, taskId) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.removeQueries({ queryKey: ['tasks', taskId] })
       toast.success('Tarefa arquivada.')
     },
     onError: () => {

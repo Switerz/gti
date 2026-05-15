@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   buildAdditionalAssigneeIdsForOwnerChange,
   getAdditionalAssigneeIds,
@@ -52,20 +53,29 @@ const PRIORITY_OPTIONS = [
   { value: 'urgent', label: 'Urgente' },
 ]
 
-function SidebarField({ label, children }: { label: string; children: React.ReactNode }) {
+function SidebarField({
+  label,
+  children,
+  isLoading = false,
+}: {
+  label: string
+  children: React.ReactNode
+  isLoading?: boolean
+}) {
   return (
     <div className="space-y-1.5">
       <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
-      {children}
+      {isLoading ? <Skeleton className="h-8 w-full" /> : children}
     </div>
   )
 }
 
 export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
-  const { data: statuses = [] } = useTaskStatuses()
-  const { data: categories = [] } = useCategories()
-  const { data: projects = [] } = useProjects()
-  const { data: profiles = [] } = useProfiles()
+  const { data: statuses = [], isLoading: statusesLoading } = useTaskStatuses()
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories()
+  const { data: projects = [], isLoading: projectsLoading } = useProjects()
+  const { data: profiles = [], isLoading: profilesLoading } = useProfiles()
+  const isRefDataLoading = statusesLoading || categoriesLoading || projectsLoading || profilesLoading
   const updateTask = useUpdateTask(currentProfile.id)
   const archiveTask = useArchiveTask(currentProfile.id)
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -117,7 +127,7 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         </div>
       )}
 
-      <SidebarField label="Status">
+      <SidebarField label="Status" isLoading={isRefDataLoading}>
         <Select
           value={task.status_id}
           onValueChange={(v) => update({ statusId: v })}
@@ -138,7 +148,7 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         </Select>
       </SidebarField>
 
-      <SidebarField label="Prioridade">
+      <SidebarField label="Prioridade" isLoading={isRefDataLoading}>
         <Select
           value={task.priority}
           onValueChange={(v) => update({ priority: v as TaskFormValues['priority'] })}
@@ -157,7 +167,7 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         </Select>
       </SidebarField>
 
-      <SidebarField label="Responsável principal">
+      <SidebarField label="Responsável principal" isLoading={isRefDataLoading}>
         <Select
           value={task.owner_id ?? ''}
           onValueChange={handleOwnerChange}
@@ -176,7 +186,7 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         </Select>
       </SidebarField>
 
-      <SidebarField label="Responsáveis adicionais">
+      <SidebarField label="Responsáveis adicionais" isLoading={isRefDataLoading}>
         <div className="space-y-2 rounded-md border bg-background/50 p-2">
           {profiles.length === 0 ? (
             <p className="text-xs text-muted-foreground">Nenhum membro disponível.</p>
@@ -214,7 +224,7 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         </div>
       </SidebarField>
 
-      <SidebarField label="Categoria">
+      <SidebarField label="Categoria" isLoading={isRefDataLoading}>
         <Select
           value={toSelectValue(task.category_id)}
           onValueChange={(v) => update({ categoryId: fromOptionalSelectValue(v) || undefined })}
@@ -234,7 +244,7 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         </Select>
       </SidebarField>
 
-      <SidebarField label="Projeto">
+      <SidebarField label="Projeto" isLoading={isRefDataLoading}>
         <Select
           value={toSelectValue(task.project_id)}
           onValueChange={(v) => update({ projectId: fromOptionalSelectValue(v) || undefined })}

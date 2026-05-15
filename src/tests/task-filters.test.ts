@@ -163,6 +163,32 @@ describe('sortTasks', () => {
   })
 })
 
+// ─── getMyTasks extra-IDs filtering (mirrors task.service optimisation) ───────
+
+function getExtraIds(directIds: Set<string>, assignedIds: string[]): string[] {
+  return assignedIds.filter((id) => !directIds.has(id))
+}
+
+describe('getMyTasks extra-IDs filtering', () => {
+  it('returns IDs not present in the direct set', () => {
+    const directIds = new Set(['a', 'b'])
+    expect(getExtraIds(directIds, ['b', 'c', 'd'])).toEqual(['c', 'd'])
+  })
+
+  it('returns empty array when all assigned IDs are already direct', () => {
+    const directIds = new Set(['a', 'b'])
+    expect(getExtraIds(directIds, ['a', 'b'])).toHaveLength(0)
+  })
+
+  it('returns all IDs when directIds set is empty', () => {
+    expect(getExtraIds(new Set(), ['x', 'y'])).toEqual(['x', 'y'])
+  })
+
+  it('returns empty array when assignedIds is empty', () => {
+    expect(getExtraIds(new Set(['a']), [])).toHaveLength(0)
+  })
+})
+
 describe('deduplicateTasks', () => {
   it('removes duplicate task ids', () => {
     const input = [{ id: 'x' }, { id: 'y' }, { id: 'x' }]

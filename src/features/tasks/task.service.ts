@@ -62,46 +62,41 @@ export const taskService = {
   },
 
   async getMyTasks(userId: string): Promise<TaskWithRelations[]> {
-    const { data: directTasks, error: e1 } = await supabase
-      .from('tasks')
-      .select(TASK_SELECT)
-      .eq('is_archived', false)
-      .or(`creator_id.eq.${userId},owner_id.eq.${userId}`)
-      .order('position', { ascending: true })
+    // Run direct-tasks and assignee-id lookups in parallel
+    const [{ data: directTasks, error: e1 }, { data: assignedRows, error: e2 }] =
+      await Promise.all([
+        supabase
+          .from('tasks')
+          .select(TASK_SELECT)
+          .eq('is_archived', false)
+          .or(`creator_id.eq.${userId},owner_id.eq.${userId}`)
+          .order('position', { ascending: true }),
+        supabase.from('task_assignees').select('task_id').eq('profile_id', userId),
+      ])
 
     if (e1) throw e1
-
-    const { data: assignedRows, error: e2 } = await supabase
-      .from('task_assignees')
-      .select('task_id')
-      .eq('profile_id', userId)
-
     if (e2) throw e2
 
-    const assignedIds = (assignedRows ?? []).map((r: any) => r.task_id)
+    // Only fetch tasks that weren't already returned in the direct query
+    const directIds = new Set((directTasks ?? []).map((t: any) => t.id))
+    const extraIds = (assignedRows ?? [])
+      .map((r: any) => r.task_id as string)
+      .filter((id) => !directIds.has(id))
 
-    if (assignedIds.length === 0) {
+    if (extraIds.length === 0) {
       return (directTasks ?? []) as unknown as TaskWithRelations[]
     }
 
-    const { data: assignedTasks, error: e3 } = await supabase
+    const { data: extraTasks, error: e3 } = await supabase
       .from('tasks')
       .select(TASK_SELECT)
       .eq('is_archived', false)
-      .in('id', assignedIds)
+      .in('id', extraIds)
       .order('position', { ascending: true })
 
     if (e3) throw e3
 
-    const all = [...(directTasks ?? []), ...(assignedTasks ?? [])]
-    const seen = new Set<string>()
-    const unique = all.filter((t: any) => {
-      if (seen.has(t.id)) return false
-      seen.add(t.id)
-      return true
-    })
-
-    return unique as unknown as TaskWithRelations[]
+    return [...(directTasks ?? []), ...(extraTasks ?? [])] as unknown as TaskWithRelations[]
   },
 
   async getById(id: string): Promise<TaskWithRelations | null> {
