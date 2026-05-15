@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { FolderOpen, Plus } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import { ErrorState } from '@/components/shared/ErrorState'
 import { Button } from '@/components/ui/button'
@@ -134,33 +135,35 @@ function ProjectCreateDialog({ open, onOpenChange, createdBy }: CreateDialogProp
 
 function ProjectCard({ project }: { project: ProjectWithCategory }) {
   return (
-    <Card className="flex flex-col transition-shadow hover:shadow-md">
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-base leading-snug">{project.name}</CardTitle>
-          <FolderOpen className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-        </div>
-        {project.category && (
-          <span
-            className="inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{
-              backgroundColor: `${project.category.color}22`,
-              color: project.category.color ?? undefined,
-            }}
-          >
-            {project.category.name}
-          </span>
-        )}
-      </CardHeader>
-      <CardContent className="flex flex-1 flex-col justify-between gap-3">
-        {project.description ? (
-          <p className="line-clamp-3 text-sm text-muted-foreground">{project.description}</p>
-        ) : (
-          <p className="text-sm italic text-muted-foreground">Sem descrição.</p>
-        )}
-        <p className="text-xs text-muted-foreground">Criado em {formatDateTime(project.created_at)}</p>
-      </CardContent>
-    </Card>
+    <Link to={`/projects/${project.id}`} className="group block">
+      <Card className="flex h-full flex-col transition-shadow group-hover:shadow-md">
+        <CardHeader className="pb-2">
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="text-base leading-snug group-hover:text-primary">{project.name}</CardTitle>
+            <FolderOpen className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          </div>
+          {project.category && (
+            <span
+              className="inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium"
+              style={{
+                backgroundColor: `${project.category.color}22`,
+                color: project.category.color ?? undefined,
+              }}
+            >
+              {project.category.name}
+            </span>
+          )}
+        </CardHeader>
+        <CardContent className="flex flex-1 flex-col justify-between gap-3">
+          {project.description ? (
+            <p className="line-clamp-3 text-sm text-muted-foreground">{project.description}</p>
+          ) : (
+            <p className="text-sm italic text-muted-foreground">Sem descrição.</p>
+          )}
+          <p className="text-xs text-muted-foreground">Criado em {formatDateTime(project.created_at)}</p>
+        </CardContent>
+      </Card>
+    </Link>
   )
 }
 

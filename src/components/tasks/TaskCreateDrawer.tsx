@@ -37,6 +37,7 @@ interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   currentProfile: Profile
+  defaultProjectId?: string
 }
 
 const PRIORITY_OPTIONS = [
@@ -46,7 +47,7 @@ const PRIORITY_OPTIONS = [
   { value: 'urgent', label: 'Urgente' },
 ]
 
-export function TaskCreateDrawer({ open, onOpenChange, currentProfile }: Props) {
+export function TaskCreateDrawer({ open, onOpenChange, currentProfile, defaultProjectId }: Props) {
   const { data: statuses = [] } = useTaskStatuses()
   const { data: categories = [] } = useCategories()
   const { data: projects = [] } = useProjects()
@@ -55,7 +56,10 @@ export function TaskCreateDrawer({ open, onOpenChange, currentProfile }: Props) 
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema) as Resolver<TaskFormValues>,
-    defaultValues: getCreateTaskDefaults(currentProfile.id, statuses),
+    defaultValues: {
+      ...getCreateTaskDefaults(currentProfile.id, statuses),
+      projectId: defaultProjectId ?? '',
+    },
   })
 
   const statusId = useWatch({ control: form.control, name: 'statusId' })
@@ -82,7 +86,7 @@ export function TaskCreateDrawer({ open, onOpenChange, currentProfile }: Props) 
 
   async function onSubmit(values: TaskFormValues) {
     await createTask.mutateAsync(values)
-    form.reset(getCreateTaskDefaults(currentProfile.id, statuses))
+    form.reset({ ...getCreateTaskDefaults(currentProfile.id, statuses), projectId: defaultProjectId ?? '' })
     onOpenChange(false)
   }
 
