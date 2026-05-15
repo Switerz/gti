@@ -77,7 +77,7 @@ export function ProjectDetailPage() {
   const today = new Date().toISOString().slice(0, 10)
   const overdueTasks = openTasks.filter((t) => t.due_date && t.due_date < today)
 
-  if (isLoading) return <LoadingState />
+  if (isLoading) return <LoadingState fullPage />
   if (isError || !project) return <ErrorState title="Projeto não encontrado." description="Verifique o link ou volte à lista." />
 
   return (

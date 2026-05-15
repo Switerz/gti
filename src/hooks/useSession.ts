@@ -6,5 +6,7 @@ export function useSession() {
   return useQuery({
     queryKey: ['auth', 'session'],
     queryFn: authService.getSession,
+    staleTime: Infinity,
+    retry: false,
   })
 }

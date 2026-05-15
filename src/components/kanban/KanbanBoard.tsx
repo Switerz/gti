@@ -71,7 +71,10 @@ export function KanbanBoard({ tasks, statuses, currentProfile, isLoading, onTask
       onDragEnd={onDragEnd}
       onDragCancel={() => setActiveTask(null)}
     >
-      <div className="flex gap-4 overflow-x-auto pb-6">
+      <div
+        className="grid gap-3"
+        style={{ gridTemplateColumns: `repeat(${visibleStatuses.length}, minmax(0, 1fr))` }}
+      >
         {visibleStatuses.map((status) => (
           <KanbanColumn
             key={status.id}
@@ -85,7 +88,7 @@ export function KanbanBoard({ tasks, statuses, currentProfile, isLoading, onTask
 
       <DragOverlay dropAnimation={null}>
         {activeTask && (
-          <div className="w-72 rotate-1 opacity-95 shadow-2xl">
+          <div className="w-64 rotate-1 opacity-95 shadow-2xl">
             <TaskCard task={activeTask} />
           </div>
         )}

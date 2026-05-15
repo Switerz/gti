@@ -19,6 +19,17 @@ export const profileService = {
     return data
   },
 
+  async getById(id: string): Promise<Profile | null> {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (error) throw error
+    return data
+  },
+
   async getAll(): Promise<Profile[]> {
     const { data, error } = await supabase
       .from('profiles')

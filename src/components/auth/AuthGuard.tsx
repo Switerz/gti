@@ -5,18 +5,18 @@ import { useCurrentProfile } from '@/hooks/useCurrentProfile'
 import { useSession } from '@/hooks/useSession'
 
 export function AuthGuard() {
-  const { data: session, isLoading: sessionLoading } = useSession()
-  const { data: profile, isLoading: profileLoading } = useCurrentProfile()
+  const { data: session, isLoading: sessionLoading, isError: sessionError } = useSession()
+  const { data: profile, isLoading: profileLoading, isError: profileError } = useCurrentProfile()
 
   if (sessionLoading || (session && profileLoading)) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LoadingState />
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <LoadingState fullPage />
       </div>
     )
   }
 
-  if (!session) {
+  if (sessionError || profileError || !session) {
     return <Navigate to="/login" replace />
   }
 

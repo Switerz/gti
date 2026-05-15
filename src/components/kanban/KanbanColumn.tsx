@@ -17,29 +17,35 @@ export function KanbanColumn({ status, tasks, isLoading, onTaskEdit }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: status.id })
 
   return (
-    <div className="flex w-72 shrink-0 flex-col">
-      <div className="mb-3 flex items-center gap-2 px-1">
+    <div className="flex min-w-0 flex-col gap-2">
+      {/* Column header */}
+      <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
         <div
-          className="h-2.5 w-2.5 rounded-full"
+          className="h-2 w-2 shrink-0 rounded-full"
           style={{ backgroundColor: status.color ?? '#888' }}
         />
-        <span className="text-sm font-medium">{status.name}</span>
-        <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+        <span className="min-w-0 truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {status.name}
+        </span>
+        <span className="ml-auto shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
           {isLoading ? '—' : tasks.length}
         </span>
       </div>
 
+      {/* Drop zone */}
       <div
         ref={setNodeRef}
         className={cn(
-          'flex min-h-24 flex-1 flex-col gap-2 rounded-xl border bg-muted/30 p-2 transition-colors',
-          isOver && 'bg-primary/5 ring-2 ring-primary/20',
+          'flex flex-col gap-2 rounded-xl border bg-muted/20 p-2 transition-colors',
+          'min-h-[120px] overflow-y-auto',
+          'max-h-[calc(100svh-300px)]',
+          isOver && 'bg-primary/8 ring-2 ring-primary/25',
         )}
       >
         {isLoading ? (
           Array.from({ length: 2 }).map((_, i) => <TaskCardSkeleton key={i} />)
         ) : tasks.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center py-8 text-xs text-muted-foreground">
+          <div className="flex flex-1 items-center justify-center py-10 text-xs text-muted-foreground/60">
             Sem tarefas
           </div>
         ) : (

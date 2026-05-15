@@ -66,7 +66,7 @@ export function TaskDetailPage() {
     setEditingDesc(false)
   }
 
-  if (isLoading) return <LoadingState />
+  if (isLoading) return <LoadingState fullPage />
   if (isError || !task) return <ErrorState title="Tarefa não encontrada." description="Verifique o link ou volte à lista." />
 
   return (
