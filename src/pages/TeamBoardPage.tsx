@@ -15,6 +15,7 @@ import { filterTasksForTeamBoard, hasActiveTeamFilters } from '@/features/tasks/
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
 import { useTasks } from '@/hooks/useTasks'
+import { canEditTask } from '@/lib/permissions'
 import type { TaskWithRelations } from '@/types/domain'
 
 import { PageHeader } from './PageHeader'
@@ -69,6 +70,11 @@ export function TeamBoardPage() {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
+  function handleTaskEdit(task: TaskWithRelations) {
+    if (!currentProfile || !canEditTask(currentProfile, task)) return
+    setEditingTask(task)
+  }
+
   return (
     <section className="space-y-5">
       <PageHeader
@@ -109,7 +115,7 @@ export function TeamBoardPage() {
             statuses={statuses}
             currentProfile={currentProfile}
             isLoading={isLoading}
-            onTaskEdit={setEditingTask}
+            onTaskEdit={handleTaskEdit}
           />
         )
       )}

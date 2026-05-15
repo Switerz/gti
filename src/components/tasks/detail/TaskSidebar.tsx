@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Archive, Users } from 'lucide-react'
+import { Archive, Lock, Users } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -35,6 +35,7 @@ import { useProjects } from '@/hooks/useProjects'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
 import { useUpdateTask } from '@/hooks/useUpdateTask'
 import { formatDateTime } from '@/lib/dates'
+import { canArchiveTask, canEditTask } from '@/lib/permissions'
 import { fromOptionalSelectValue, SELECT_NONE_VALUE, toSelectValue } from '@/lib/select-values'
 import type { Profile, TaskFormValues, TaskWithRelations } from '@/types/domain'
 
@@ -46,7 +47,7 @@ interface Props {
 
 const PRIORITY_OPTIONS = [
   { value: 'low', label: 'Baixa' },
-  { value: 'medium', label: 'Media' },
+  { value: 'medium', label: 'Média' },
   { value: 'high', label: 'Alta' },
   { value: 'urgent', label: 'Urgente' },
 ]
@@ -70,7 +71,11 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const additionalAssigneeIds = getAdditionalAssigneeIds(task)
 
+  const canEdit = canEditTask(currentProfile, task)
+  const canArchive = canArchiveTask(currentProfile, task)
+
   function update(values: Partial<TaskFormValues>) {
+    if (!canEdit) return
     updateTask.mutate({ id: task.id, values })
   }
 
@@ -104,8 +109,20 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
 
   return (
     <aside className="space-y-4 rounded-xl border bg-card p-4">
+      {/* Readonly notice */}
+      {!canEdit && (
+        <div className="flex items-center gap-2 rounded-lg border border-muted bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          <Lock className="h-3.5 w-3.5 shrink-0" />
+          Visualização apenas. Você não tem permissão para editar esta tarefa.
+        </div>
+      )}
+
       <SidebarField label="Status">
-        <Select value={task.status_id} onValueChange={(v) => update({ statusId: v })}>
+        <Select
+          value={task.status_id}
+          onValueChange={(v) => update({ statusId: v })}
+          disabled={!canEdit || updateTask.isPending}
+        >
           <SelectTrigger className="h-8 text-sm">
             <SelectValue />
           </SelectTrigger>
@@ -125,6 +142,7 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         <Select
           value={task.priority}
           onValueChange={(v) => update({ priority: v as TaskFormValues['priority'] })}
+          disabled={!canEdit || updateTask.isPending}
         >
           <SelectTrigger className="h-8 text-sm">
             <SelectValue />
@@ -139,10 +157,14 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         </Select>
       </SidebarField>
 
-      <SidebarField label="Responsavel principal">
-        <Select value={task.owner_id ?? ''} onValueChange={handleOwnerChange}>
+      <SidebarField label="Responsável principal">
+        <Select
+          value={task.owner_id ?? ''}
+          onValueChange={handleOwnerChange}
+          disabled={!canEdit || updateTask.isPending}
+        >
           <SelectTrigger className="h-8 text-sm">
-            <SelectValue placeholder="Sem responsavel" />
+            <SelectValue placeholder="Sem responsável" />
           </SelectTrigger>
           <SelectContent>
             {profiles.map((p) => (
@@ -154,10 +176,10 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         </Select>
       </SidebarField>
 
-      <SidebarField label="Responsaveis adicionais">
+      <SidebarField label="Responsáveis adicionais">
         <div className="space-y-2 rounded-md border bg-background/50 p-2">
           {profiles.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Nenhum membro disponivel.</p>
+            <p className="text-xs text-muted-foreground">Nenhum membro disponível.</p>
           ) : (
             profiles.map((profile) => {
               const isOwner = profile.id === task.owner_id
@@ -167,9 +189,9 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
                 <label key={profile.id} className="flex items-center gap-2 text-xs">
                   <Checkbox
                     checked={isChecked}
-                    disabled={isOwner || updateTask.isPending}
+                    disabled={isOwner || !canEdit || updateTask.isPending}
                     onCheckedChange={() => handleAdditionalAssigneeToggle(profile.id)}
-                    aria-label={`Alternar responsavel ${profile.full_name ?? profile.email}`}
+                    aria-label={`Alternar responsável ${profile.full_name ?? profile.email}`}
                   />
                   <Avatar className="h-5 w-5">
                     <AvatarImage src={profile.avatar_url ?? undefined} />
@@ -188,7 +210,7 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         </div>
         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
           <Users className="h-3 w-3" />
-          O responsavel principal sempre fica incluido.
+          O responsável principal sempre fica incluído.
         </div>
       </SidebarField>
 
@@ -196,6 +218,7 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         <Select
           value={toSelectValue(task.category_id)}
           onValueChange={(v) => update({ categoryId: fromOptionalSelectValue(v) || undefined })}
+          disabled={!canEdit || updateTask.isPending}
         >
           <SelectTrigger className="h-8 text-sm">
             <SelectValue placeholder="Nenhuma" />
@@ -215,6 +238,7 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         <Select
           value={toSelectValue(task.project_id)}
           onValueChange={(v) => update({ projectId: fromOptionalSelectValue(v) || undefined })}
+          disabled={!canEdit || updateTask.isPending}
         >
           <SelectTrigger className="h-8 text-sm">
             <SelectValue placeholder="Nenhum" />
@@ -231,11 +255,12 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
       </SidebarField>
 
       <div className="grid grid-cols-2 gap-3">
-        <SidebarField label="Inicio">
+        <SidebarField label="Início">
           <Input
             type="date"
             className="h-8 text-sm"
             defaultValue={task.start_date ?? ''}
+            disabled={!canEdit || updateTask.isPending}
             onBlur={(e) => update({ startDate: e.target.value || undefined })}
           />
         </SidebarField>
@@ -244,6 +269,7 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
             type="date"
             className="h-8 text-sm"
             defaultValue={task.due_date ?? ''}
+            disabled={!canEdit || updateTask.isPending}
             onBlur={(e) => update({ dueDate: e.target.value || undefined })}
           />
         </SidebarField>
@@ -268,10 +294,11 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         size="sm"
         className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
         onClick={() => setConfirmOpen(true)}
-        disabled={task.is_archived}
+        disabled={task.is_archived || !canArchive}
+        aria-label="Arquivar tarefa"
       >
         <Archive className="mr-2 h-3.5 w-3.5" />
-        {task.is_archived ? 'Ja arquivada' : 'Arquivar tarefa'}
+        {task.is_archived ? 'Já arquivada' : 'Arquivar tarefa'}
       </Button>
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
@@ -279,7 +306,7 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
           <DialogHeader>
             <DialogTitle>Arquivar tarefa?</DialogTitle>
             <DialogDescription>
-              A tarefa sera removida dos boards e listas. Essa acao pode ser revertida pelo
+              A tarefa será removida dos boards e listas. Essa ação pode ser revertida pelo
               administrador.
             </DialogDescription>
           </DialogHeader>

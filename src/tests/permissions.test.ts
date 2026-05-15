@@ -4,6 +4,7 @@ import {
   canArchiveTask,
   canEditTask,
   canManageAllowlist,
+  canManageCategories,
   canManageProjects,
   canViewTeamTasks,
 } from '@/lib/permissions'
@@ -97,5 +98,16 @@ describe('permission helpers', () => {
     expect(canArchiveTask(profile({ id: 'creator-1' }), task())).toBe(true)
     expect(canArchiveTask(profile({ id: 'owner-1' }), task())).toBe(true)
     expect(canArchiveTask(profile({ id: 'lead', role: 'lead' }), task())).toBe(false)
+  })
+
+  it('allows only admins to manage categories', () => {
+    expect(canManageCategories(profile({ role: 'admin' }))).toBe(true)
+    expect(canManageCategories(profile({ role: 'lead' }))).toBe(false)
+    expect(canManageCategories(profile({ role: 'member' }))).toBe(false)
+    expect(canManageCategories(null)).toBe(false)
+  })
+
+  it('blocks inactive admin from managing categories', () => {
+    expect(canManageCategories(profile({ role: 'admin', active: false }))).toBe(false)
   })
 })

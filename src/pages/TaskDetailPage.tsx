@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
 import { useTask } from '@/hooks/useTask'
 import { useUpdateTask } from '@/hooks/useUpdateTask'
+import { canEditTask } from '@/lib/permissions'
 import type { TaskPriority } from '@/types/domain'
 
 export function TaskDetailPage() {
@@ -34,8 +35,10 @@ export function TaskDetailPage() {
   const [editingDesc, setEditingDesc] = useState(false)
   const [descDraft, setDescDraft] = useState('')
 
+  const canEdit = !!(task && currentProfile && canEditTask(currentProfile, task))
+
   function startEditTitle() {
-    if (!task) return
+    if (!task || !canEdit) return
     setTitleDraft(task.title)
     setEditingTitle(true)
   }
@@ -48,7 +51,7 @@ export function TaskDetailPage() {
   }
 
   function startEditDesc() {
-    if (!task) return
+    if (!task || !canEdit) return
     setDescDraft(task.description ?? '')
     setEditingDesc(true)
   }
@@ -94,12 +97,15 @@ export function TaskDetailPage() {
         ) : (
           <div className="group flex items-start gap-2">
             <h1 className="text-2xl font-bold leading-tight">{task.title}</h1>
-            <button
-              onClick={startEditTitle}
-              className="invisible mt-1.5 shrink-0 text-muted-foreground hover:text-foreground group-hover:visible"
-            >
-              <Pencil className="h-4 w-4" />
-            </button>
+            {canEdit && (
+              <button
+                onClick={startEditTitle}
+                className="invisible mt-1.5 shrink-0 text-muted-foreground hover:text-foreground group-hover:visible"
+                aria-label="Editar título"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            )}
           </div>
         )}
 
@@ -121,7 +127,7 @@ export function TaskDetailPage() {
           <section className="space-y-2">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold">Descrição</h3>
-              {!editingDesc && (
+              {canEdit && !editingDesc && (
                 <Button variant="ghost" size="sm" onClick={startEditDesc}>
                   <Pencil className="mr-1 h-3 w-3" />
                   Editar

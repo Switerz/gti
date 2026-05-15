@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
 import { useMyTasks } from '@/hooks/useTasks'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
+import { canEditTask } from '@/lib/permissions'
 import type { TaskWithRelations } from '@/types/domain'
 
 import { PageHeader } from './PageHeader'
@@ -22,6 +23,11 @@ export function MyBoardPage() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<TaskWithRelations | null>(null)
   const [search, setSearch] = useState('')
+
+  function handleTaskEdit(task: TaskWithRelations) {
+    if (!currentProfile || !canEditTask(currentProfile, task)) return
+    setEditingTask(task)
+  }
   const [priority, setPriority] = useState('')
   const [categoryId, setCategoryId] = useState('')
 
@@ -63,7 +69,7 @@ export function MyBoardPage() {
           statuses={statuses}
           currentProfile={currentProfile}
           isLoading={isLoading}
-          onTaskEdit={setEditingTask}
+          onTaskEdit={handleTaskEdit}
         />
       )}
 

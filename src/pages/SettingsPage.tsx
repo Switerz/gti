@@ -110,7 +110,7 @@ function MyProfileCard() {
 
 // ── Allowlist row ─────────────────────────────────────────────────────────────
 
-function AllowlistRow({ entry }: { entry: AllowedEmail }) {
+function AllowlistRow({ entry, isLastAdmin }: { entry: AllowedEmail; isLastAdmin: boolean }) {
   const updateEntry = useUpdateAllowlistEntry()
   const removeEntry = useRemoveAllowlistEntry()
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -152,7 +152,9 @@ function AllowlistRow({ entry }: { entry: AllowedEmail }) {
       <td className="px-4 py-3">
         <button
           onClick={() => setConfirmOpen(true)}
-          className="text-muted-foreground hover:text-destructive"
+          disabled={isLastAdmin}
+          title={isLastAdmin ? 'Não é possível remover o único administrador' : 'Remover'}
+          className="text-muted-foreground hover:text-destructive disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -250,6 +252,7 @@ function AddAllowlistForm() {
 
 function AllowlistSection() {
   const { data: entries = [], isLoading } = useAllowlist()
+  const adminCount = entries.filter((e) => e.role === 'admin').length
 
   return (
     <Card>
@@ -294,7 +297,11 @@ function AllowlistSection() {
               </thead>
               <tbody>
                 {entries.map((e) => (
-                  <AllowlistRow key={e.id} entry={e} />
+                  <AllowlistRow
+                    key={e.id}
+                    entry={e}
+                    isLastAdmin={e.role === 'admin' && adminCount === 1}
+                  />
                 ))}
               </tbody>
             </table>

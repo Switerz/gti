@@ -24,6 +24,7 @@ import { useCurrentProfile } from '@/hooks/useCurrentProfile'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
 import { useTasks } from '@/hooks/useTasks'
 import { formatDate } from '@/lib/dates'
+import { canEditTask } from '@/lib/permissions'
 import { fromOptionalSelectValue, SELECT_ALL_VALUE, toSelectValue } from '@/lib/select-values'
 import type { TaskPriority, TaskWithRelations } from '@/types/domain'
 import { PageHeader } from './PageHeader'
@@ -86,6 +87,11 @@ export function TaskListPage() {
       setSortKey(key)
       setSortDir('asc')
     }
+  }
+
+  function handleTaskEdit(task: TaskWithRelations) {
+    if (!currentProfile || !canEditTask(currentProfile, task)) return
+    setEditingTask(task)
   }
 
   return (
@@ -243,7 +249,7 @@ export function TaskListPage() {
                     <TaskRow
                       key={task.id}
                       task={task}
-                      onEdit={currentProfile ? () => setEditingTask(task) : undefined}
+                      onEdit={currentProfile ? () => handleTaskEdit(task) : undefined}
                     />
                   ))
                 )}
