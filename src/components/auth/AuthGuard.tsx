@@ -5,7 +5,10 @@ import { useCurrentProfile } from '@/hooks/useCurrentProfile'
 import { useSession } from '@/hooks/useSession'
 
 export function AuthGuard() {
-  const { data: session, isLoading: sessionLoading, isError: sessionError } = useSession()
+  // isLoading (not isFetching) — only true when there's genuinely no cached data.
+  // AuthProvider seeds this cache via setQueryData from INITIAL_SESSION (no network call),
+  // so isLoading should resolve within one render cycle in almost all cases.
+  const { data: session, isLoading: sessionLoading } = useSession()
   const { data: profile, isLoading: profileLoading, isError: profileError } = useCurrentProfile()
 
   if (sessionLoading || (session && profileLoading)) {
@@ -16,7 +19,8 @@ export function AuthGuard() {
     )
   }
 
-  if (sessionError || profileError || !session) {
+  // session is null → user not logged in (SIGNED_OUT or no stored session)
+  if (profileError || !session) {
     return <Navigate to="/login" replace />
   }
 

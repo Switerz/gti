@@ -17,6 +17,10 @@ export function AuthProvider() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Immediately seed the session cache so AuthGuard never waits for getSession() network calls.
+      // INITIAL_SESSION fires synchronously from local storage — no network round-trip needed.
+      queryClient.setQueryData(['auth', 'session'], session)
+
       if (event === 'SIGNED_IN' && session?.user) {
         const user = session.user
         const email = user.email ?? ''
@@ -37,7 +41,6 @@ export function AuthProvider() {
           role: allowed.role,
         })
 
-        queryClient.invalidateQueries({ queryKey: ['auth'] })
         queryClient.invalidateQueries({ queryKey: ['profiles', 'current'] })
       }
 
