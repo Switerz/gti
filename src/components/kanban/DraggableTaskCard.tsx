@@ -28,7 +28,14 @@ export function DraggableTaskCard({ task, onEdit }: Props) {
       ref={setRefs}
       {...attributes}
       {...listeners}
-      className={isDragging ? 'opacity-30' : isOver ? 'ring-2 ring-primary/20' : undefined}
+      aria-label={task.title}
+      className={
+        isDragging
+          ? 'opacity-30'
+          : isOver
+            ? 'rounded-lg ring-2 ring-primary/20 ring-offset-2 ring-offset-background'
+            : undefined
+      }
       style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
     >
       <TaskCard task={task} onEdit={onEdit} />

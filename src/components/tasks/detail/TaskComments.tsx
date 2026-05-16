@@ -84,6 +84,7 @@ export function TaskComments({ taskId, currentProfile }: Props) {
                   {c.author_id === currentProfile.id && (
                     <button
                       onClick={() => deleteComment.mutate(c.id)}
+                      aria-label="Excluir comentário"
                       className="invisible ml-auto text-muted-foreground hover:text-destructive group-hover:visible"
                     >
                       <Trash2 className="h-3.5 w-3.5" />

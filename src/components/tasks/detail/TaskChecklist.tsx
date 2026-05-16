@@ -57,7 +57,14 @@ export function TaskChecklist({ taskId, currentProfileId }: Props) {
       </div>
 
       {total > 0 && (
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          role="progressbar"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Progresso do checklist"
+          className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+        >
           <div
             className="h-full rounded-full bg-primary transition-all"
             style={{ width: `${pct}%` }}
@@ -91,6 +98,7 @@ export function TaskChecklist({ taskId, currentProfileId }: Props) {
               </span>
               <button
                 onClick={() => deleteItem.mutate(item.id)}
+                aria-label={`Excluir ${item.title}`}
                 className="invisible text-muted-foreground hover:text-destructive group-hover:visible"
               >
                 <Trash2 className="h-3.5 w-3.5" />
