@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Archive, Lock, Users } from 'lucide-react'
+import { Archive, Lock, RefreshCw, Users } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -37,6 +37,7 @@ import { useTaskStatuses } from '@/hooks/useTaskStatuses'
 import { useUpdateTask } from '@/hooks/useUpdateTask'
 import { formatDateTime } from '@/lib/dates'
 import { canArchiveTask, canEditTask } from '@/lib/permissions'
+import { RECURRENCE_LABELS } from '@/features/tasks/recurrence'
 import { fromOptionalSelectValue, SELECT_NONE_VALUE, toSelectValue } from '@/lib/select-values'
 import type { Profile, TaskFormValues, TaskWithRelations } from '@/types/domain'
 
@@ -284,6 +285,30 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
           />
         </SidebarField>
       </div>
+
+      <SidebarField label="Recorrência" isLoading={isRefDataLoading}>
+        <Select
+          value={task.recurrence_type ?? 'none'}
+          onValueChange={(v) => update({ recurrenceType: v as TaskFormValues['recurrenceType'] })}
+          disabled={!canEdit || updateTask.isPending}
+        >
+          <SelectTrigger className="h-8 text-sm">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+              <RefreshCw className="h-3 w-3 shrink-0 text-muted-foreground" />
+              <SelectValue />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.entries(RECURRENCE_LABELS) as [TaskFormValues['recurrenceType'], string][]).map(
+              ([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ),
+            )}
+          </SelectContent>
+        </Select>
+      </SidebarField>
 
       <Separator />
 

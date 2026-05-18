@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
-import { ArrowLeft, Pencil } from 'lucide-react'
+import { ArrowLeft, Copy, Pencil } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { TaskActivityLog } from '@/components/tasks/detail/TaskActivityLog'
 import { TaskChecklist } from '@/components/tasks/detail/TaskChecklist'
 import { TaskComments } from '@/components/tasks/detail/TaskComments'
 import { TaskSidebar } from '@/components/tasks/detail/TaskSidebar'
+import { TaskFormDrawer } from '@/components/tasks/TaskFormDrawer'
 import { TaskPriorityBadge } from '@/components/tasks/TaskPriorityBadge'
 import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge'
 import { ErrorState } from '@/components/shared/ErrorState'
@@ -26,6 +27,8 @@ export function TaskDetailPage() {
   const { data: currentProfile } = useCurrentProfile()
   const { data: task, isLoading, isError } = useTask(id)
   const updateTask = useUpdateTask(currentProfile?.id ?? '')
+
+  const [duplicateOpen, setDuplicateOpen] = useState(false)
 
   // Inline title editing
   const [editingTitle, setEditingTitle] = useState(false)
@@ -116,6 +119,17 @@ export function TaskDetailPage() {
           {task.project && (
             <span className="text-xs text-muted-foreground">{task.project.name}</span>
           )}
+          {currentProfile && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto"
+              onClick={() => setDuplicateOpen(true)}
+            >
+              <Copy className="mr-1.5 h-3.5 w-3.5" />
+              Duplicar
+            </Button>
+          )}
         </div>
       </div>
 
@@ -192,6 +206,15 @@ export function TaskDetailPage() {
           />
         )}
       </div>
+
+      {currentProfile && (
+        <TaskFormDrawer
+          open={duplicateOpen}
+          onOpenChange={setDuplicateOpen}
+          currentProfile={currentProfile}
+          duplicateFrom={duplicateOpen ? task : undefined}
+        />
+      )}
     </div>
   )
 }

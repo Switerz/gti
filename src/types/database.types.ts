@@ -164,6 +164,7 @@ export type Database = {
           completed_at: string | null
           position: number
           is_archived: boolean
+          recurrence_type: 'none' | 'weekly' | 'monthly'
           created_at: string
           updated_at: string
         }
@@ -182,6 +183,7 @@ export type Database = {
           completed_at?: string | null
           position?: number
           is_archived?: boolean
+          recurrence_type?: 'none' | 'weekly' | 'monthly'
           created_at?: string
           updated_at?: string
         }
@@ -200,6 +202,7 @@ export type Database = {
           completed_at?: string | null
           position?: number
           is_archived?: boolean
+          recurrence_type?: 'none' | 'weekly' | 'monthly'
           created_at?: string
           updated_at?: string
         }

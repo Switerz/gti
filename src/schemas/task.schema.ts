@@ -13,6 +13,7 @@ export const taskFormSchema = z.object({
   priority: taskPrioritySchema.default('medium'),
   startDate: z.string().optional(),
   dueDate: z.string().optional(),
+  recurrenceType: z.enum(['none', 'weekly', 'monthly']).default('none'),
 })
 
 export type TaskFormValues = z.infer<typeof taskFormSchema>

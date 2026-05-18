@@ -6,6 +6,7 @@ import type { Database } from './database.types'
 
 export type UserRole = 'admin' | 'lead' | 'member'
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
+export type { RecurrenceType } from '@/features/tasks/recurrence'
 export type TaskActivityAction =
   | 'task_created'
   | 'task_updated'
@@ -42,7 +43,7 @@ export type TaskWithRelations = Task & {
   owner: ProfileSummary | null
   assignees: Array<{ profile: ProfileSummary }>
   _comments: Array<{ id: string }>
-  _checklist: Array<{ id: string; is_done: boolean }>
+  _checklist: Array<{ id: string; is_done: boolean; title: string; position: number }>
 }
 
 // Convenience helpers derived from TaskWithRelations

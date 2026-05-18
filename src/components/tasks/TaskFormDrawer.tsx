@@ -23,7 +23,8 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
-import { buildEditTaskDefaults, getCreateTaskDefaults } from '@/features/tasks/task-payload'
+import { buildDuplicateTaskDefaults, buildEditTaskDefaults, getCreateTaskDefaults } from '@/features/tasks/task-payload'
+import { RECURRENCE_LABELS } from '@/features/tasks/recurrence'
 import { useCategories } from '@/hooks/useCategories'
 import { useCreateTask } from '@/hooks/useCreateTask'
 import { useProfiles } from '@/hooks/useProfiles'
@@ -39,6 +40,7 @@ interface Props {
   onOpenChange: (open: boolean) => void
   currentProfile: Profile
   task?: TaskWithRelations
+  duplicateFrom?: TaskWithRelations
   defaultProjectId?: string
 }
 
@@ -54,9 +56,10 @@ export function TaskFormDrawer({
   onOpenChange,
   currentProfile,
   task,
+  duplicateFrom,
   defaultProjectId,
 }: Props) {
-  const isEdit = !!task
+  const isEdit = !!task && !duplicateFrom
 
   const { data: statuses = [] } = useTaskStatuses()
   const { data: categories = [] } = useCategories()
@@ -67,15 +70,22 @@ export function TaskFormDrawer({
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema) as Resolver<TaskFormValues>,
-    defaultValues: isEdit
-      ? buildEditTaskDefaults(task)
-      : { ...getCreateTaskDefaults(currentProfile.id, statuses), projectId: defaultProjectId ?? '' },
+    defaultValues: duplicateFrom
+      ? buildDuplicateTaskDefaults(duplicateFrom)
+      : isEdit
+        ? buildEditTaskDefaults(task)
+        : { ...getCreateTaskDefaults(currentProfile.id, statuses), projectId: defaultProjectId ?? '' },
   })
 
   // Edit mode: re-populate form when the task changes
   useEffect(() => {
-    if (task) form.reset(buildEditTaskDefaults(task))
+    if (task && !duplicateFrom) form.reset(buildEditTaskDefaults(task))
   }, [task?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Duplicate mode: re-populate when duplicateFrom changes
+  useEffect(() => {
+    if (duplicateFrom) form.reset(buildDuplicateTaskDefaults(duplicateFrom))
+  }, [duplicateFrom?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const statusId = useWatch({ control: form.control, name: 'statusId' })
   const priority = useWatch({ control: form.control, name: 'priority' })
@@ -83,6 +93,7 @@ export function TaskFormDrawer({
   const categoryId = useWatch({ control: form.control, name: 'categoryId' })
   const projectId = useWatch({ control: form.control, name: 'projectId' })
   const assigneeIds = useWatch({ control: form.control, name: 'assigneeIds' }) ?? []
+  const recurrenceType = useWatch({ control: form.control, name: 'recurrenceType' }) ?? 'none'
 
   // Create mode: fill default status once statuses load
   useEffect(() => {
@@ -107,6 +118,7 @@ export function TaskFormDrawer({
       form.reset({
         ...getCreateTaskDefaults(currentProfile.id, statuses),
         projectId: defaultProjectId ?? '',
+        recurrenceType: 'none',
       })
     }
     onOpenChange(false)
@@ -118,9 +130,15 @@ export function TaskFormDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full max-w-lg p-0">
         <SheetHeader className="border-b px-6 py-4">
-          <SheetTitle>{isEdit ? 'Editar tarefa' : 'Nova tarefa'}</SheetTitle>
+          <SheetTitle>
+            {isEdit ? 'Editar tarefa' : duplicateFrom ? 'Duplicar tarefa' : 'Nova tarefa'}
+          </SheetTitle>
           <SheetDescription>
-            {isEdit ? 'Altere os campos e clique em salvar.' : 'Preencha os dados e clique em criar.'}
+            {isEdit
+              ? 'Altere os campos e clique em salvar.'
+              : duplicateFrom
+                ? 'Revise os campos e clique em criar.'
+                : 'Preencha os dados e clique em criar.'}
           </SheetDescription>
         </SheetHeader>
 
@@ -286,6 +304,30 @@ export function TaskFormDrawer({
                 <Label htmlFor="task-dueDate">Prazo</Label>
                 <Input id="task-dueDate" type="date" {...form.register('dueDate')} />
               </div>
+            </div>
+
+            {/* Recurrence */}
+            <div className="space-y-1.5">
+              <Label>Recorrência</Label>
+              <Select
+                value={recurrenceType}
+                onValueChange={(v) =>
+                  form.setValue('recurrenceType', v as TaskFormValues['recurrenceType'])
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.entries(RECURRENCE_LABELS) as [TaskFormValues['recurrenceType'], string][]).map(
+                    ([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ),
+                  )}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Actions */}

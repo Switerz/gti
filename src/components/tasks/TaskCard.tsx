@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-import { CheckSquare, MessageSquare, Pencil } from 'lucide-react'
+import { CheckSquare, MessageSquare, Pencil, RefreshCw } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
@@ -88,6 +88,11 @@ export function TaskCard({ task, className, onEdit }: Props) {
             isArchived={task.is_archived}
             className="px-1.5 text-[10px]"
           />
+          {task.recurrence_type && task.recurrence_type !== 'none' && (
+            <span className="inline-flex items-center gap-0.5 rounded-full px-1 text-[10px] text-muted-foreground" title="Tarefa recorrente">
+              <RefreshCw className="h-3 w-3" />
+            </span>
+          )}
           {commentCount > 0 && (
             <span className="inline-flex items-center gap-0.5 rounded-full px-1 text-[10px] text-muted-foreground">
               <MessageSquare className="h-3 w-3" />

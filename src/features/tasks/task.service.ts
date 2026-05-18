@@ -10,6 +10,7 @@ import {
   buildUpdateTaskPayload,
 } from './task-payload'
 import { diffAssigneeIds } from './task-assignees'
+import { buildRecurringTitle, getNextDueDate, type RecurrenceType } from './recurrence'
 
 const TASK_SELECT = `
   *,
@@ -20,7 +21,7 @@ const TASK_SELECT = `
   owner:profiles!owner_id(id, full_name, avatar_url),
   assignees:task_assignees(profile:profiles!task_assignees_profile_id_fkey(id, full_name, avatar_url)),
   _comments:task_comments(id),
-  _checklist:task_checklist_items(id, is_done)
+  _checklist:task_checklist_items(id, is_done, title, position)
 ` as const
 
 export interface TaskFilters {
@@ -205,7 +206,70 @@ export const taskService = {
 
     const full = await taskService.getById(id)
     if (!full) throw new Error('Task not found after update')
+
+    if (statusRow?.is_final && full.recurrence_type !== 'none') {
+      await taskService.createRecurring(full, actorId)
+    }
+
     return full
+  },
+
+  async createRecurring(source: TaskWithRelations, actorId: string): Promise<void> {
+    const recurrenceType = source.recurrence_type as RecurrenceType
+
+    const { data: backlogStatus } = await db.task_statuses()
+      .select('id')
+      .eq('is_final', false)
+      .neq('slug', 'archived')
+      .order('position', { ascending: true })
+      .limit(1)
+      .single()
+
+    const nextStatusId = backlogStatus?.id ?? source.status_id
+    const nextDueDate = source.due_date
+      ? getNextDueDate(recurrenceType, new Date(source.due_date))
+      : getNextDueDate(recurrenceType)
+
+    const { data: newTask, error } = await db.tasks()
+      .insert({
+        title: buildRecurringTitle(source.title, recurrenceType),
+        description: source.description,
+        status_id: nextStatusId,
+        category_id: source.category_id,
+        project_id: source.project_id,
+        creator_id: actorId,
+        owner_id: source.owner_id,
+        priority: source.priority,
+        due_date: nextDueDate || null,
+        start_date: null,
+        recurrence_type: recurrenceType,
+      })
+      .select('id')
+      .single()
+
+    if (error) throw error
+
+    const assigneeRows = buildTaskAssigneeRows({
+      taskId: newTask.id,
+      actorId,
+      ownerId: source.owner_id ?? actorId,
+      assigneeIds: source.assignees.map((a) => a.profile.id).filter((id) => id !== source.owner_id),
+    })
+    if (assigneeRows.length > 0) {
+      await db.task_assignees().insert(assigneeRows)
+    }
+
+    if (source._checklist.length > 0) {
+      const checklistRows = source._checklist.map((item) => ({
+        task_id: newTask.id,
+        title: item.title,
+        is_done: false,
+        position: item.position,
+      }))
+      await supabase.from('task_checklist_items').insert(checklistRows)
+    }
+
+    await taskService.logActivity(newTask.id, actorId, 'task_created')
   },
 
   async moveStatus(id: string, statusId: string, position: number, actorId: string): Promise<void> {
@@ -220,6 +284,13 @@ export const taskService = {
     if (error) throw error
 
     await taskService.logActivity(id, actorId, 'status_changed', { status_id: statusId })
+
+    if (statusRow?.is_final) {
+      const full = await taskService.getById(id)
+      if (full && full.recurrence_type !== 'none') {
+        await taskService.createRecurring(full, actorId)
+      }
+    }
   },
 
   async archive(id: string, actorId: string): Promise<void> {

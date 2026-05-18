@@ -16,6 +16,7 @@ export function getCreateTaskDefaults(currentProfileId: string, statuses: TaskSt
     projectId: '',
     startDate: '',
     dueDate: '',
+    recurrenceType: 'none',
   }
 }
 
@@ -32,6 +33,24 @@ export function buildEditTaskDefaults(task: TaskWithRelations): TaskFormValues {
     priority: task.priority,
     startDate: task.start_date ?? '',
     dueDate: task.due_date ?? '',
+    recurrenceType: (task.recurrence_type as TaskFormValues['recurrenceType']) ?? 'none',
+  }
+}
+
+export function buildDuplicateTaskDefaults(task: TaskWithRelations): TaskFormValues {
+  const assigneeProfileIds = task.assignees.map((a) => a.profile.id)
+  return {
+    title: `Cópia de: ${task.title}`,
+    description: task.description ?? '',
+    statusId: task.status_id,
+    ownerId: task.owner_id ?? '',
+    assigneeIds: assigneeProfileIds.filter((id) => id !== task.owner_id),
+    categoryId: task.category_id ?? '',
+    projectId: task.project_id ?? '',
+    priority: task.priority,
+    startDate: '',
+    dueDate: '',
+    recurrenceType: (task.recurrence_type as TaskFormValues['recurrenceType']) ?? 'none',
   }
 }
 
@@ -47,6 +66,7 @@ export function buildCreateTaskPayload(values: TaskFormValues, creatorId: string
     priority: values.priority,
     due_date: values.dueDate || null,
     start_date: values.startDate || null,
+    recurrence_type: values.recurrenceType ?? 'none',
   }
 }
 
@@ -69,6 +89,7 @@ export function buildUpdateTaskPayload(
   if (values.priority !== undefined) updatePayload.priority = values.priority
   if (values.dueDate !== undefined) updatePayload.due_date = values.dueDate || null
   if (values.startDate !== undefined) updatePayload.start_date = values.startDate || null
+  if (values.recurrenceType !== undefined) updatePayload.recurrence_type = values.recurrenceType
 
   return updatePayload
 }
