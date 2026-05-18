@@ -40,6 +40,7 @@ const db = {
   task_assignees: () => supabase.from('task_assignees') as any,
   task_activity_logs: () => supabase.from('task_activity_logs') as any,
   task_statuses: () => supabase.from('task_statuses') as any,
+  task_checklist_items: () => supabase.from('task_checklist_items') as any,
 }
 
 export const taskService = {
@@ -266,7 +267,7 @@ export const taskService = {
         is_done: false,
         position: item.position,
       }))
-      await supabase.from('task_checklist_items').insert(checklistRows)
+      await db.task_checklist_items().insert(checklistRows)
     }
 
     await taskService.logActivity(newTask.id, actorId, 'task_created')
