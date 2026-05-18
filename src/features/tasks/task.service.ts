@@ -160,22 +160,32 @@ export const taskService = {
         .eq('task_id', id)
       if (existingAssigneesError) throw existingAssigneesError
 
-      await db.task_assignees().delete().eq('task_id', id)
       const rows = buildTaskAssigneeRows({
         taskId: id,
         actorId,
         ownerId: values.ownerId || actorId,
         assigneeIds: values.assigneeIds,
       })
-      if (rows.length > 0) {
-        const { error: ae } = await db.task_assignees().insert(rows)
-        if (ae) throw ae
-      }
 
       const changes = diffAssigneeIds(
         (existingAssigneeRows ?? []).map((row: any) => row.profile_id),
         rows.map((row) => row.profile_id),
       )
+
+      if (changes.removed.length > 0) {
+        const { error: removeError } = await db
+          .task_assignees()
+          .delete()
+          .eq('task_id', id)
+          .in('profile_id', changes.removed)
+        if (removeError) throw removeError
+      }
+
+      const addedRows = rows.filter((row) => changes.added.includes(row.profile_id))
+      if (addedRows.length > 0) {
+        const { error: ae } = await db.task_assignees().insert(addedRows)
+        if (ae) throw ae
+      }
 
       await Promise.all([
         ...changes.added.map((profileId) =>

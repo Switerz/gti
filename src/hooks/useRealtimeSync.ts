@@ -45,6 +45,13 @@ export function useRealtimeSync() {
           if (taskId) queryClient.invalidateQueries({ queryKey: ['task-activity', taskId] })
         },
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'task_assignees' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['tasks'] })
+        },
+      )
       .subscribe()
 
     return () => {

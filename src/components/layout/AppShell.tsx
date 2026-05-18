@@ -11,9 +11,9 @@ export function AppShell() {
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
-      <div className="flex min-h-screen flex-col lg:pl-72">
+      <div className="flex min-h-screen flex-col lg:pl-56">
         <Topbar />
-        <main className="flex-1 px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pb-8">
+        <main className="flex-1 px-4 pb-24 pt-4 sm:px-5 lg:px-4 lg:pb-6">
           <Outlet />
         </main>
       </div>

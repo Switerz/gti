@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-import { AlertOctagon, CheckSquare, MessageSquare, Pencil } from 'lucide-react'
+import { CheckSquare, MessageSquare, Pencil } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
@@ -20,67 +20,90 @@ export function TaskCard({ task, className, onEdit }: Props) {
   const checklistTotal = task._checklist?.length ?? 0
   const checklistDone = task._checklist?.filter((c) => c.is_done).length ?? 0
   const isBlocked = task.status?.slug === 'blocked'
-  const assigneeProfiles = task.assignees?.map((a) => a.profile) ?? []
+  const assigneeProfiles = task.assignees?.map((a) => a.profile).filter((profile) => !!profile) ?? []
+  const displayProfiles = assigneeProfiles.length > 0 ? assigneeProfiles : task.owner ? [task.owner] : []
+  const visibleAssignees = displayProfiles.slice(0, 2)
+  const categoryColor = task.category?.color ?? '#64748b'
 
   return (
     <Link
       to={`/tasks/${task.id}`}
       className={cn(
-        'group relative block rounded-lg border bg-card p-3.5 shadow-sm transition-shadow hover:shadow-md',
-        isBlocked && 'border-red-300 bg-red-50/30 dark:border-red-800 dark:bg-red-950/20',
+        'group relative block rounded-lg border bg-card/95 p-2.5 shadow-sm outline-none transition-colors hover:border-primary/35 hover:bg-card focus-visible:ring-2 focus-visible:ring-ring/40',
+        isBlocked && 'border-red-500/50 bg-red-950/[0.04] dark:bg-red-950/15',
         className,
       )}
     >
       {onEdit && (
         <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit() }}
-          className="absolute right-2 top-2 invisible rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground group-hover:visible"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onEdit()
+          }}
+          className="invisible absolute right-2 top-2 rounded-md border bg-background/90 p-1 text-muted-foreground opacity-0 shadow-sm transition hover:text-foreground group-hover:visible group-hover:opacity-100"
           aria-label="Editar tarefa"
         >
           <Pencil className="h-3 w-3" />
         </button>
       )}
-      {/* Category + blocked indicator */}
-      <div className="mb-2 flex items-center gap-2">
+
+      <div className="mb-2 flex items-center gap-1.5 pr-6">
         {task.category && (
           <span
-            className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+            className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none"
             style={{
-              backgroundColor: `${task.category.color}22`,
-              color: task.category.color ?? undefined,
+              backgroundColor: `${categoryColor}1f`,
+              color: categoryColor,
             }}
           >
-            {task.category.name}
-          </span>
-        )}
-        {isBlocked && (
-          <span className="ml-auto flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400">
-            <AlertOctagon className="h-3 w-3" />
-            Bloqueado
+            <span
+              className="h-1.5 w-1.5 shrink-0 rounded-full"
+              style={{ backgroundColor: categoryColor }}
+            />
+            <span className="truncate">{task.category.name}</span>
           </span>
         )}
       </div>
 
-      {/* Title */}
-      <p className="mb-3 line-clamp-2 text-sm font-medium leading-snug text-foreground group-hover:text-primary">
+      <p className="mb-1.5 line-clamp-3 text-[12px] font-semibold leading-snug text-foreground group-hover:text-primary">
         {task.title}
       </p>
 
-      {/* Priority + Due date */}
-      <div className="mb-3 flex flex-wrap items-center gap-1.5">
-        <TaskPriorityBadge priority={task.priority as TaskPriority} />
-        <TaskDueDateBadge
-          dueDate={task.due_date}
-          isFinal={task.status?.is_final}
-          isArchived={task.is_archived}
-        />
-      </div>
+      {task.project && (
+        <p className="mb-2 line-clamp-2 text-[10.5px] leading-snug text-muted-foreground">
+          {task.project.name}
+        </p>
+      )}
 
-      {/* Footer: assignees + counters */}
-      <div className="flex items-center justify-between">
-        {/* Assignee avatars */}
-        <div className="flex -space-x-1.5">
-          {assigneeProfiles.slice(0, 4).map((profile) => {
+      <div className="flex items-end justify-between gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-1">
+          <TaskPriorityBadge
+            priority={task.priority as TaskPriority}
+            className="px-1.5 text-[10px]"
+          />
+          <TaskDueDateBadge
+            dueDate={task.due_date}
+            isFinal={task.status?.is_final}
+            isArchived={task.is_archived}
+            className="px-1.5 text-[10px]"
+          />
+          {commentCount > 0 && (
+            <span className="inline-flex items-center gap-0.5 rounded-full px-1 text-[10px] text-muted-foreground">
+              <MessageSquare className="h-3 w-3" />
+              {commentCount}
+            </span>
+          )}
+          {checklistTotal > 0 && (
+            <span className="inline-flex items-center gap-0.5 rounded-full px-1 text-[10px] text-muted-foreground">
+              <CheckSquare className="h-3 w-3" />
+              {checklistDone}/{checklistTotal}
+            </span>
+          )}
+        </div>
+
+        <div className="flex shrink-0 -space-x-1">
+          {visibleAssignees.map((profile) => {
             const initials = profile.full_name
               ?.split(' ')
               .slice(0, 2)
@@ -88,32 +111,16 @@ export function TaskCard({ task, className, onEdit }: Props) {
               .join('')
               .toUpperCase() ?? '?'
             return (
-              <Avatar key={profile.id} className="h-6 w-6 border-2 border-card">
+              <Avatar key={profile.id} className="h-5 w-5 border border-card shadow-sm">
                 <AvatarImage src={profile.avatar_url ?? undefined} />
                 <AvatarFallback className="text-[9px]">{initials}</AvatarFallback>
               </Avatar>
             )
           })}
-          {assigneeProfiles.length > 4 && (
-            <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-muted text-[9px] font-medium text-muted-foreground">
-              +{assigneeProfiles.length - 4}
+          {displayProfiles.length > 2 && (
+            <div className="flex h-5 w-5 items-center justify-center rounded-full border border-card bg-muted text-[9px] font-medium text-muted-foreground">
+              +{displayProfiles.length - 2}
             </div>
-          )}
-        </div>
-
-        {/* Counters */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {commentCount > 0 && (
-            <span className="flex items-center gap-0.5">
-              <MessageSquare className="h-3 w-3" />
-              {commentCount}
-            </span>
-          )}
-          {checklistTotal > 0 && (
-            <span className="flex items-center gap-0.5">
-              <CheckSquare className="h-3 w-3" />
-              {checklistDone}/{checklistTotal}
-            </span>
           )}
         </div>
       </div>
@@ -124,13 +131,13 @@ export function TaskCard({ task, className, onEdit }: Props) {
 // Skeleton version for loading state
 export function TaskCardSkeleton() {
   return (
-    <div className="rounded-lg border bg-card p-3.5 shadow-sm">
-      <div className="mb-2 h-4 w-20 animate-pulse rounded-full bg-muted" />
-      <div className="mb-1 h-4 w-full animate-pulse rounded bg-muted" />
-      <div className="mb-3 h-4 w-3/4 animate-pulse rounded bg-muted" />
-      <div className="flex gap-1.5">
-        <div className="h-5 w-12 animate-pulse rounded-full bg-muted" />
-        <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
+    <div className="rounded-lg border bg-card/90 p-2.5 shadow-sm">
+      <div className="mb-2 h-3 w-20 animate-pulse rounded-full bg-muted" />
+      <div className="mb-1 h-3.5 w-full animate-pulse rounded bg-muted" />
+      <div className="mb-2.5 h-3.5 w-3/4 animate-pulse rounded bg-muted" />
+      <div className="flex gap-1">
+        <div className="h-4 w-11 animate-pulse rounded-full bg-muted" />
+        <div className="h-4 w-14 animate-pulse rounded-full bg-muted" />
       </div>
     </div>
   )

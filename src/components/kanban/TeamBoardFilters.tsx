@@ -65,8 +65,12 @@ export function TeamBoardFilters({ filters, onFilterChange, currentProfileId }: 
         value={toSelectValue(filters.priority, SELECT_ALL_VALUE)}
         onValueChange={(v) => onFilterChange('priority', fromOptionalSelectValue(v, SELECT_ALL_VALUE))}
       >
-        <SelectTrigger aria-label="Filtrar por prioridade" className="w-36">
-          <SelectValue placeholder="Prioridade" />
+        <SelectTrigger aria-label="Filtrar por prioridade" className="w-40">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+            <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Prioridade</span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <SelectValue placeholder="Todas" />
+          </div>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={SELECT_ALL_VALUE}>Todas</SelectItem>
@@ -81,8 +85,12 @@ export function TeamBoardFilters({ filters, onFilterChange, currentProfileId }: 
         value={toSelectValue(filters.ownerId, SELECT_ALL_VALUE)}
         onValueChange={(v) => onFilterChange('ownerId', fromOptionalSelectValue(v, SELECT_ALL_VALUE))}
       >
-        <SelectTrigger aria-label="Filtrar por responsável" className="w-44">
-          <SelectValue placeholder="Responsável" />
+        <SelectTrigger aria-label="Filtrar por responsável" className="w-48">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+            <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Responsável</span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <SelectValue placeholder="Todos" />
+          </div>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={SELECT_ALL_VALUE}>Todos</SelectItem>
@@ -99,7 +107,11 @@ export function TeamBoardFilters({ filters, onFilterChange, currentProfileId }: 
         onValueChange={(v) => onFilterChange('creatorId', fromOptionalSelectValue(v, SELECT_ALL_VALUE))}
       >
         <SelectTrigger aria-label="Filtrar por criador" className="w-44">
-          <SelectValue placeholder="Criador" />
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+            <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Criador</span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <SelectValue placeholder="Todos" />
+          </div>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={SELECT_ALL_VALUE}>Todos</SelectItem>
@@ -115,8 +127,12 @@ export function TeamBoardFilters({ filters, onFilterChange, currentProfileId }: 
         value={toSelectValue(filters.categoryId, SELECT_ALL_VALUE)}
         onValueChange={(v) => onFilterChange('categoryId', fromOptionalSelectValue(v, SELECT_ALL_VALUE))}
       >
-        <SelectTrigger aria-label="Filtrar por categoria" className="w-44">
-          <SelectValue placeholder="Categoria" />
+        <SelectTrigger aria-label="Filtrar por categoria" className="w-48">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+            <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Categoria</span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <SelectValue placeholder="Todas" />
+          </div>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={SELECT_ALL_VALUE}>Todas</SelectItem>
@@ -132,8 +148,12 @@ export function TeamBoardFilters({ filters, onFilterChange, currentProfileId }: 
         value={toSelectValue(filters.projectId, SELECT_ALL_VALUE)}
         onValueChange={(v) => onFilterChange('projectId', fromOptionalSelectValue(v, SELECT_ALL_VALUE))}
       >
-        <SelectTrigger aria-label="Filtrar por projeto" className="w-44">
-          <SelectValue placeholder="Projeto" />
+        <SelectTrigger aria-label="Filtrar por projeto" className="w-48">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+            <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Projeto</span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <SelectValue placeholder="Todos" />
+          </div>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={SELECT_ALL_VALUE}>Todos</SelectItem>
@@ -150,7 +170,11 @@ export function TeamBoardFilters({ filters, onFilterChange, currentProfileId }: 
         onValueChange={(v) => onFilterChange('statusId', fromOptionalSelectValue(v, SELECT_ALL_VALUE))}
       >
         <SelectTrigger aria-label="Filtrar por status" className="w-44">
-          <SelectValue placeholder="Status" />
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+            <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Status</span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <SelectValue placeholder="Todos" />
+          </div>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={SELECT_ALL_VALUE}>Todos</SelectItem>
@@ -170,8 +194,12 @@ export function TeamBoardFilters({ filters, onFilterChange, currentProfileId }: 
           onFilterChange('due', fromOptionalSelectValue(v, SELECT_ALL_VALUE) as DueDateFilter)
         }
       >
-        <SelectTrigger aria-label="Filtrar por vencimento" className="w-44">
-          <SelectValue placeholder="Vencimento" />
+        <SelectTrigger aria-label="Filtrar por vencimento" className="w-48">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+            <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Vencimento</span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <SelectValue placeholder="Todos" />
+          </div>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={SELECT_ALL_VALUE}>Todos</SelectItem>

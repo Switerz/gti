@@ -24,6 +24,10 @@ export function canViewTeamTasks(profile: Profile | null | undefined) {
   return isActive(profile)
 }
 
+export function canExportTasks(profile: Profile | null | undefined) {
+  return isLeadOrAdmin(profile)
+}
+
 function isTaskAssignee(profile: Profile, task: Pick<TaskWithRelations, 'assignees'>) {
   return task.assignees.some((assignee) => assignee.profile.id === profile.id)
 }

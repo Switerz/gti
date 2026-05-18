@@ -4,6 +4,17 @@ import { formatDate, isPastDue } from '@/lib/dates'
 
 // ─── isPastDue ────────────────────────────────────────────────────────────────
 
+function localDateFromToday(dayOffset: number) {
+  const date = new Date()
+  date.setDate(date.getDate() + dayOffset)
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
 describe('isPastDue', () => {
   it('returns false when dueDate is null', () => {
     expect(isPastDue(null)).toBe(false)
@@ -14,22 +25,22 @@ describe('isPastDue', () => {
   })
 
   it('returns false when task is in a final status', () => {
-    const yesterday = new Date(Date.now() - 86_400_000).toISOString().split('T')[0]
+    const yesterday = localDateFromToday(-1)
     expect(isPastDue(yesterday, true, false)).toBe(false)
   })
 
   it('returns false when task is archived', () => {
-    const yesterday = new Date(Date.now() - 86_400_000).toISOString().split('T')[0]
+    const yesterday = localDateFromToday(-1)
     expect(isPastDue(yesterday, false, true)).toBe(false)
   })
 
   it('returns true for a past due date on an active task', () => {
-    const yesterday = new Date(Date.now() - 86_400_000).toISOString().split('T')[0]
+    const yesterday = localDateFromToday(-1)
     expect(isPastDue(yesterday, false, false)).toBe(true)
   })
 
   it('returns false for a future due date', () => {
-    const tomorrow = new Date(Date.now() + 86_400_000).toISOString().split('T')[0]
+    const tomorrow = localDateFromToday(1)
     expect(isPastDue(tomorrow, false, false)).toBe(false)
   })
 })

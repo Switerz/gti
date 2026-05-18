@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { ArrowUpDown, ChevronDown, ChevronUp, Plus, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
+import { TaskExportDialog } from '@/components/tasks/TaskExportDialog'
 import { TaskFormDrawer } from '@/components/tasks/TaskFormDrawer'
 import { TaskDueDateBadge } from '@/components/tasks/TaskDueDateBadge'
 import { TaskPriorityBadge } from '@/components/tasks/TaskPriorityBadge'
@@ -23,7 +24,7 @@ import { useCurrentProfile } from '@/hooks/useCurrentProfile'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
 import { useTasks } from '@/hooks/useTasks'
 import { formatDate } from '@/lib/dates'
-import { canEditTask } from '@/lib/permissions'
+import { canEditTask, canExportTasks } from '@/lib/permissions'
 import { fromOptionalSelectValue, SELECT_ALL_VALUE, toSelectValue } from '@/lib/select-values'
 import type { TaskPriority, TaskWithRelations } from '@/types/domain'
 import { PageHeader } from './PageHeader'
@@ -78,6 +79,7 @@ export function TaskListPage() {
     sortKey,
     sortDir,
   )
+  const canExport = canExportTasks(currentProfile)
 
   function handleSort(key: SortKey) {
     if (key === sortKey) {
@@ -100,10 +102,13 @@ export function TaskListPage() {
         description="Visão tabular de todas as tarefas ativas."
         actions={
           currentProfile ? (
-            <Button onClick={() => setDrawerOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nova tarefa
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              {canExport && <TaskExportDialog tasks={filtered} />}
+              <Button onClick={() => setDrawerOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nova tarefa
+              </Button>
+            </div>
           ) : undefined
         }
       />
@@ -124,8 +129,12 @@ export function TaskListPage() {
           value={toSelectValue(statusId, SELECT_ALL_VALUE)}
           onValueChange={(value) => setStatusId(fromOptionalSelectValue(value, SELECT_ALL_VALUE))}
         >
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Status" />
+          <SelectTrigger className="w-44">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+              <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Status</span>
+              <span className="shrink-0 text-muted-foreground/40">·</span>
+              <SelectValue placeholder="Todos" />
+            </div>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={SELECT_ALL_VALUE}>Todos</SelectItem>
@@ -143,8 +152,12 @@ export function TaskListPage() {
           value={toSelectValue(priority, SELECT_ALL_VALUE)}
           onValueChange={(value) => setPriority(fromOptionalSelectValue(value, SELECT_ALL_VALUE))}
         >
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder="Prioridade" />
+          <SelectTrigger className="w-40">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+              <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Prioridade</span>
+              <span className="shrink-0 text-muted-foreground/40">·</span>
+              <SelectValue placeholder="Todas" />
+            </div>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={SELECT_ALL_VALUE}>Todas</SelectItem>
@@ -159,8 +172,12 @@ export function TaskListPage() {
           value={toSelectValue(categoryId, SELECT_ALL_VALUE)}
           onValueChange={(value) => setCategoryId(fromOptionalSelectValue(value, SELECT_ALL_VALUE))}
         >
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Categoria" />
+          <SelectTrigger className="w-52">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+              <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Categoria</span>
+              <span className="shrink-0 text-muted-foreground/40">·</span>
+              <SelectValue placeholder="Todas" />
+            </div>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={SELECT_ALL_VALUE}>Todas</SelectItem>

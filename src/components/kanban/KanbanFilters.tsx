@@ -31,12 +31,12 @@ export function KanbanFilters({
   const { data: categories = [] } = useCategories()
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="relative min-w-[180px]">
+    <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card/70 p-2.5 shadow-sm">
+      <div className="relative min-w-[220px] flex-1">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Buscar tarefas..."
-          className="pl-9"
+          className="h-9 bg-background pl-9"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
         />
@@ -46,8 +46,12 @@ export function KanbanFilters({
         value={toSelectValue(priority, SELECT_ALL_VALUE)}
         onValueChange={(value) => onPriorityChange(fromOptionalSelectValue(value, SELECT_ALL_VALUE))}
       >
-        <SelectTrigger className="w-36">
-          <SelectValue placeholder="Prioridade" />
+        <SelectTrigger className="h-9 w-40 bg-background">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+            <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Prioridade</span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <SelectValue placeholder="Todas" />
+          </div>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={SELECT_ALL_VALUE}>Todas</SelectItem>
@@ -62,8 +66,12 @@ export function KanbanFilters({
         value={toSelectValue(categoryId, SELECT_ALL_VALUE)}
         onValueChange={(value) => onCategoryChange(fromOptionalSelectValue(value, SELECT_ALL_VALUE))}
       >
-        <SelectTrigger className="w-48">
-          <SelectValue placeholder="Categoria" />
+        <SelectTrigger className="h-9 w-52 bg-background">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+            <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Categoria</span>
+            <span className="shrink-0 text-muted-foreground/40">·</span>
+            <SelectValue placeholder="Todas" />
+          </div>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={SELECT_ALL_VALUE}>Todas</SelectItem>

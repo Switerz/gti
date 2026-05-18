@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   canArchiveTask,
   canEditTask,
+  canExportTasks,
   canManageAllowlist,
   canManageCategories,
   canManageProjects,
@@ -71,6 +72,13 @@ describe('permission helpers', () => {
     expect(canManageProjects(profile({ role: 'admin' }))).toBe(true)
     expect(canManageProjects(profile({ role: 'lead' }))).toBe(true)
     expect(canManageProjects(profile({ role: 'member' }))).toBe(false)
+  })
+
+  it('allows lead and admin to export tasks', () => {
+    expect(canExportTasks(profile({ role: 'admin' }))).toBe(true)
+    expect(canExportTasks(profile({ role: 'lead' }))).toBe(true)
+    expect(canExportTasks(profile({ role: 'member' }))).toBe(false)
+    expect(canExportTasks(profile({ role: 'admin', active: false }))).toBe(false)
   })
 
   it('allows task editing for admin, lead, creator, owner and assignee', () => {

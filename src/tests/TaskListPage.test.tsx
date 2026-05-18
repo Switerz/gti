@@ -2,7 +2,7 @@ import React from 'react'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { TaskListPage } from '@/pages/TaskListPage'
 import type { TaskWithRelations } from '@/types/domain'
@@ -11,7 +11,7 @@ import type { TaskWithRelations } from '@/types/domain'
 
 vi.mock('@/hooks/useCurrentProfile', () => ({
   useCurrentProfile: vi.fn(() => ({
-    data: { id: 'u1', full_name: 'Alice', role: 'admin', avatar_url: null },
+    data: { id: 'u1', full_name: 'Alice', role: 'admin', active: true, avatar_url: null },
   })),
 }))
 
@@ -93,6 +93,13 @@ function renderPage() {
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('TaskListPage', () => {
+  beforeEach(async () => {
+    const { useCurrentProfile } = await import('@/hooks/useCurrentProfile')
+    vi.mocked(useCurrentProfile).mockReturnValue({
+      data: { id: 'u1', full_name: 'Alice', role: 'admin', active: true, avatar_url: null },
+    } as ReturnType<typeof useCurrentProfile>)
+  })
+
   it('renders the page header title', () => {
     renderPage()
     expect(screen.getByText('Lista de Tarefas')).toBeInTheDocument()
@@ -111,6 +118,21 @@ describe('TaskListPage', () => {
   it('shows "Nova tarefa" button when profile is loaded', () => {
     renderPage()
     expect(screen.getByRole('button', { name: /nova tarefa/i })).toBeInTheDocument()
+  })
+
+  it('shows CSV export for admin and lead profiles', () => {
+    renderPage()
+    expect(screen.getByRole('button', { name: /exportar csv/i })).toBeInTheDocument()
+  })
+
+  it('hides CSV export for member profiles', async () => {
+    const { useCurrentProfile } = await import('@/hooks/useCurrentProfile')
+    vi.mocked(useCurrentProfile).mockReturnValue({
+      data: { id: 'u1', full_name: 'Alice', role: 'member', active: true, avatar_url: null },
+    } as ReturnType<typeof useCurrentProfile>)
+
+    renderPage()
+    expect(screen.queryByRole('button', { name: /exportar csv/i })).not.toBeInTheDocument()
   })
 
   it('renders a row for each non-archived task', async () => {

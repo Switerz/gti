@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GTI — Manual do Usuário</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: #e0e7ff;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #3b82f6;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --bg: #f8fafc;
+      --bg-white: #ffffff;
+      --bg-sidebar: #1e1b4b;
+      --sidebar-text: #c7d2fe;
+      --sidebar-active: #818cf8;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,.10), 0 2px 4px -1px rgba(0,0,0,.06);
+      --sidebar-w: 260px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    /* ──────────────── LAYOUT ──────────────── */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ──────────────── SIDEBAR ──────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--bg-sidebar);
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      overflow-y: auto;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .sidebar-logo .logo-icon {
+      width: 36px; height: 36px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 800; font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo .logo-text {
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .sidebar-logo .logo-sub {
+      color: var(--sidebar-text);
+      font-size: 11px;
+      font-weight: 400;
+    }
+
+    .sidebar-section {
+      padding: 16px 12px 0;
+    }
+
+    .sidebar-section-title {
+      color: #6b7280;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 0 8px;
+      margin-bottom: 6px;
+    }
+
+    .sidebar-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: var(--sidebar-text);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all .15s;
+      margin-bottom: 2px;
+      cursor: pointer;
+    }
+
+    .sidebar-link:hover { background: rgba(255,255,255,.07); color: white; }
+    .sidebar-link.active { background: rgba(99,102,241,.25); color: var(--sidebar-active); }
+    .sidebar-link .num {
+      background: rgba(255,255,255,.1);
+      color: #94a3b8;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 20px;
+      margin-left: auto;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      font-size: 11px;
+      color: #4b5563;
+      text-align: center;
+    }
+
+    /* ──────────────── MAIN ──────────────── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* ──────────────── TOPBAR ──────────────── */
+    .topbar {
+      background: var(--bg-white);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 40px;
+      position: sticky; top: 0;
+      z-index: 50;
+      display: flex; align-items: center; gap: 16px;
+    }
+
+    .topbar h1 { font-size: 18px; font-weight: 700; color: var(--text); }
+    .topbar .version {
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .topbar .date {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ──────────────── CONTENT ──────────────── */
+    .content { padding: 40px; max-width: 900px; }
+
+    .section {
+      margin-bottom: 56px;
+      scroll-margin-top: 80px;
+    }
+
+    .section-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .section-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .icon-purple  { background: #ede9fe; }
+    .icon-blue    { background: #dbeafe; }
+    .icon-green   { background: #dcfce7; }
+    .icon-amber   { background: #fef3c7; }
+    .icon-red     { background: #fee2e2; }
+    .icon-sky     { background: #e0f2fe; }
+    .icon-pink    { background: #fce7f3; }
+    .icon-slate   { background: #f1f5f9; }
+    .icon-indigo  { background: #e0e7ff; }
+    .icon-teal    { background: #ccfbf1; }
+    .icon-orange  { background: #ffedd5; }
+
+    .section-header .title-group {}
+    .section-header h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .section-header p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 28px 0 12px;
+    }
+
+    h3:first-child { margin-top: 0; }
+
+    p { margin-bottom: 14px; color: var(--text); }
+
+    /* ──────────────── HERO ──────────────── */
+    .hero {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      border-radius: 16px;
+      padding: 40px;
+      color: white;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: 'GTI';
+      position: absolute;
+      right: -20px; top: -40px;
+      font-size: 200px;
+      font-weight: 900;
+      opacity: .05;
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    .hero h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .hero p {
+      opacity: .85;
+      font-size: 16px;
+      color: white;
+      margin-bottom: 0;
+      max-width: 520px;
+    }
+
+    .hero-badges {
+      display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap;
+    }
+
+    .hero-badge {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.2);
+      color: white;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* ──────────────── CARDS ──────────────── */
+    .card {
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .card-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+    /* ──────────────── ROLE BADGES ──────────────── */
+    .role { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .role-admin  { background: #fef3c7; color: #92400e; }
+    .role-lead   { background: #dbeafe; color: #1e40af; }
+    .role-member { background: #f0fdf4; color: #166534; }
+
+    /* ──────────────── PRIORITY BADGES ──────────────── */
+    .pri { display: inline-flex; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .pri-urgent  { background: #fee2e2; color: #b91c1c; }
+    .pri-high    { background: #ffedd5; color: #c2410c; }
+    .pri-medium  { background: #fef3c7; color: #92400e; }
+    .pri-low     { background: #f1f5f9; color: #475569; }
+
+    /* ──────────────── STATUS BADGE ──────────────── */
+    .status { display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid; }
+
+    /* ──────────────── TABLES ──────────────── */
+    .table-wrap { overflow-x: auto; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead tr { background: var(--bg); }
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      border-bottom: 2px solid var(--border);
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+
+    /* ──────────────── STEPS ──────────────── */
+    .steps { list-style: none; counter-reset: steps; }
+    .steps li {
+      counter-increment: steps;
+      display: flex; gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .steps li:last-child { border-bottom: none; }
+    .steps li::before {
+      content: counter(steps);
+      width: 28px; height: 28px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .steps li .step-content { flex: 1; }
+    .steps li .step-title { font-weight: 600; margin-bottom: 4px; }
+    .steps li .step-desc { font-size: 13px; color: var(--text-muted); }
+
+    /* ──────────────── TIPS ──────────────── */
+    .tip {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .tip-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .tip-info    { background: #eff6ff; border-left: 3px solid #3b82f6; }
+    .tip-warning { background: #fffbeb; border-left: 3px solid #f59e0b; }
+    .tip-success { background: #f0fdf4; border-left: 3px solid #22c55e; }
+    .tip-danger  { background: #fef2f2; border-left: 3px solid #ef4444; }
+
+    /* ──────────────── KBD ──────────────── */
+    kbd {
+      display: inline-flex; align-items: center;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--text);
+      box-shadow: 0 1px 0 #cbd5e1;
+    }
+
+    /* ──────────────── FIELD DOCS ──────────────── */
+    .field-list { list-style: none; }
+    .field-list li {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .field-list li:last-child { border-bottom: none; }
+    .field-name {
+      min-width: 180px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .req {
+      background: #fee2e2;
+      color: #b91c1c;
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: 700;
+    }
+    .opt {
+      background: #f1f5f9;
+      color: #64748b;
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: 700;
+    }
+    .field-desc { color: var(--text-muted); }
+
+    /* ──────────────── PERMISSION TABLE ──────────────── */
+    .perm-yes { color: #16a34a; font-size: 16px; }
+    .perm-no  { color: #dc2626; font-size: 16px; }
+    .perm-cond { color: #d97706; font-size: 16px; }
+
+    /* ──────────────── NAV MOCKUP ──────────────── */
+    .nav-mockup {
+      background: var(--bg-sidebar);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .nav-mockup .nm-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px;
+      border-radius: 6px;
+      color: var(--sidebar-text);
+      font-size: 13px;
+    }
+    .nav-mockup .nm-item.active {
+      background: rgba(99,102,241,.3);
+      color: #a5b4fc;
+    }
+    .nm-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* ──────────────── KANBAN MOCKUP ──────────────── */
+    .kanban-mockup { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+    .km-col {
+      min-width: 180px;
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 12px;
+      flex-shrink: 0;
+    }
+    .km-col-header {
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 10px;
+    }
+    .km-col-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .km-card {
+      background: white;
+      border-radius: 7px;
+      padding: 10px;
+      margin-bottom: 7px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      font-size: 12px;
+    }
+    .km-card-title { font-weight: 600; margin-bottom: 6px; line-height: 1.3; }
+    .km-card-meta { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+
+    /* ──────────────── EXPORT MOCK ──────────────── */
+    .csv-preview {
+      background: #0f172a;
+      color: #a5f3fc;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      line-height: 1.7;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 32px 0;
+    }
+
+    /* ──────────────── ACCORDION (for quick-ref) ──────────────── */
+    details {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    summary {
+      padding: 14px 18px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      background: var(--bg-white);
+      display: flex; align-items: center; gap: 8px;
+      list-style: none;
+      transition: background .15s;
+    }
+    summary:hover { background: var(--bg); }
+    summary::after { content: '▸'; margin-left: auto; color: var(--text-muted); transition: transform .2s; }
+    details[open] summary::after { transform: rotate(90deg); }
+    details[open] summary { border-bottom: 1px solid var(--border); }
+    .details-body { padding: 18px; background: var(--bg-white); font-size: 14px; }
+
+    /* ──────────────── RESPONSIVE ──────────────── */
+    @media (max-width: 900px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .content { padding: 20px; }
+      .card-grid, .card-grid-3 { grid-template-columns: 1fr; }
+      .topbar { padding: 12px 20px; }
+    }
+
+    /* ──────────────── PRINT ──────────────── */
+    @media print {
+      .sidebar, .topbar { display: none; }
+      .main { margin-left: 0; }
+      .content { padding: 0; max-width: 100%; }
+      .section { page-break-inside: avoid; }
+    }
+
+    /* ──────────────── TOC QUICK JUMP ──────────────── */
+    #toc {
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 40px;
+    }
+    #toc h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
+    .toc-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 0;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      border-bottom: 1px solid transparent;
+      transition: color .15s;
+    }
+    .toc-item:hover { color: var(--primary); }
+    .toc-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      min-width: 20px;
+    }
+
+    /* ──────────────── INLINE TAG ──────────────── */
+    .tag {
+      display: inline-flex; align-items: center;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .mono {
+      font-family: monospace;
+      background: #f1f5f9;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 13px;
+      color: #334155;
+    }
+
+    ul.bullet { padding-left: 20px; margin-bottom: 14px; }
+    ul.bullet li { margin-bottom: 6px; font-size: 14px; }
+    ol.ordered { padding-left: 20px; margin-bottom: 14px; }
+    ol.ordered li { margin-bottom: 6px; font-size: 14px; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ════════════════ SIDEBAR ════════════════ -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">G</div>
+      <div>
+        <div class="logo-text">GTI</div>
+        <div class="logo-sub">Manual do Usuário</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Introdução</div>
+      <a href="#visao-geral" class="sidebar-link">🏠 Visão Geral</a>
+      <a href="#acesso" class="sidebar-link">🔐 Acesso & Login</a>
+      <a href="#perfis" class="sidebar-link">👤 Perfis & Permissões</a>
+      <a href="#navegacao" class="sidebar-link">🗺️ Navegação</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Funcionalidades</div>
+      <a href="#dashboard" class="sidebar-link">📊 Dashboard</a>
+      <a href="#tarefas" class="sidebar-link">✅ Tarefas</a>
+      <a href="#kanban" class="sidebar-link">🗂️ Quadro Kanban</a>
+      <a href="#lista" class="sidebar-link">📋 Lista de Tarefas</a>
+      <a href="#detalhes" class="sidebar-link">🔍 Detalhe da Tarefa</a>
+      <a href="#projetos" class="sidebar-link">📁 Projetos</a>
+      <a href="#notificacoes" class="sidebar-link">🔔 Notificações</a>
+      <a href="#exportar" class="sidebar-link">📤 Exportar CSV</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Administração</div>
+      <a href="#configuracoes" class="sidebar-link">⚙️ Configurações</a>
+      <a href="#categorias" class="sidebar-link">🏷️ Categorias</a>
+      <a href="#allowlist" class="sidebar-link">👥 Allowlist</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Referência</div>
+      <a href="#fluxos" class="sidebar-link">🔄 Fluxos de Trabalho</a>
+      <a href="#atalhos" class="sidebar-link">⌨️ Atalhos & Dicas</a>
+      <a href="#faq" class="sidebar-link">❓ Perguntas Frequentes</a>
+    </div>
+
+    <div class="sidebar-footer">
+      Gogroup Transportes<br>GTI v1.0 · 2026
+    </div>
+  </nav>
+
+  <!-- ════════════════ MAIN ════════════════ -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <h1>GTI — Gestão de Tarefas Inteligente</h1>
+      <span class="version">v1.0</span>
+      <span class="date">Manual do Usuário · Gogroup Transportes · Maio 2026</span>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- HERO -->
+      <div class="hero">
+        <h1>Manual do Usuário</h1>
+        <p>Guia completo de como usar o GTI — sistema de gestão de tarefas da equipe Gogroup Transportes. Desde o primeiro acesso até funcionalidades avançadas de administração.</p>
+        <div class="hero-badges">
+          <span class="hero-badge">🔒 Acesso por Google</span>
+          <span class="hero-badge">🗂️ Kanban & Lista</span>
+          <span class="hero-badge">🔔 Notificações em tempo real</span>
+          <span class="hero-badge">📁 Gestão de Projetos</span>
+          <span class="hero-badge">📤 Exportação CSV</span>
+          <span class="hero-badge">👥 Controle de Acesso</span>
+        </div>
+      </div>
+
+      <!-- TOC -->
+      <div id="toc">
+        <h2>📑 Índice de Conteúdo</h2>
+        <div class="toc-grid">
+          <a href="#visao-geral" class="toc-item"><span class="toc-num">1</span> Visão Geral do Sistema</a>
+          <a href="#acesso" class="toc-item"><span class="toc-num">2</span> Acesso & Login</a>
+          <a href="#perfis" class="toc-item"><span class="toc-num">3</span> Perfis & Permissões</a>
+          <a href="#navegacao" class="toc-item"><span class="toc-num">4</span> Navegação</a>
+          <a href="#dashboard" class="toc-item"><span class="toc-num">5</span> Dashboard</a>
+          <a href="#tarefas" class="toc-item"><span class="toc-num">6</span> Criando e Editando Tarefas</a>
+          <a href="#kanban" class="toc-item"><span class="toc-num">7</span> Quadros Kanban</a>
+          <a href="#lista" class="toc-item"><span class="toc-num">8</span> Lista de Tarefas</a>
+          <a href="#detalhes" class="toc-item"><span class="toc-num">9</span> Detalhe da Tarefa</a>
+          <a href="#projetos" class="toc-item"><span class="toc-num">10</span> Projetos</a>
+          <a href="#notificacoes" class="toc-item"><span class="toc-num">11</span> Notificações</a>
+          <a href="#exportar" class="toc-item"><span class="toc-num">12</span> Exportar CSV</a>
+          <a href="#configuracoes" class="toc-item"><span class="toc-num">13</span> Configurações</a>
+          <a href="#categorias" class="toc-item"><span class="toc-num">14</span> Gerenciar Categorias</a>
+          <a href="#allowlist" class="toc-item"><span class="toc-num">15</span> Gerenciar Allowlist</a>
+          <a href="#fluxos" class="toc-item"><span class="toc-num">16</span> Fluxos de Trabalho</a>
+          <a href="#atalhos" class="toc-item"><span class="toc-num">17</span> Atalhos & Dicas</a>
+          <a href="#faq" class="toc-item"><span class="toc-num">18</span> Perguntas Frequentes</a>
+        </div>
+      </div>
+
+      <!-- ══════════════ 1. VISÃO GERAL ══════════════ -->
+      <section class="section" id="visao-geral">
+        <div class="section-header">
+          <div class="section-icon icon-indigo">🏠</div>
+          <div class="title-group">
+            <h2>1. Visão Geral do Sistema</h2>
+            <p>O que é o GTI e para que serve</p>
+          </div>
+        </div>
+
+        <p>O <strong>GTI (Gestão de Tarefas Inteligente)</strong> é o sistema de gerenciamento de tarefas colaborativo da equipe Gogroup Transportes. Ele centraliza toda a organização do trabalho da equipe em um único lugar, substituindo planilhas e ferramentas dispersas.</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">🗂️ Organização Visual</div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Visualize tarefas em quadros Kanban com arrastar e soltar, ou em formato de lista com ordenação e filtros avançados.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">👥 Colaboração em Equipe</div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Atribua tarefas para membros, adicione comentários, listas de checklist e acompanhe o histórico de alterações.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">🔔 Tempo Real</div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Notificações instantâneas quando você é atribuído a uma tarefa. Mudanças sincronizadas automaticamente.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">📁 Projetos</div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Organize tarefas em projetos para acompanhar o progresso por iniciativa, área ou cliente.</p>
+          </div>
+        </div>
+
+        <h3>Tecnologia Utilizada</h3>
+        <p>O GTI é uma aplicação web moderna acessível diretamente pelo navegador, sem necessidade de instalação. Requer conexão com a internet e autenticação via conta Google corporativa.</p>
+
+        <div class="tip tip-info">
+          <span class="tip-icon">💡</span>
+          <div>O GTI funciona melhor nos navegadores <strong>Google Chrome</strong>, <strong>Microsoft Edge</strong> e <strong>Firefox</strong> atualizados. Também é responsivo para uso em celular, mas a experiência completa é no desktop.</div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 2. ACESSO & LOGIN ══════════════ -->
+      <section class="section" id="acesso">
+        <div class="section-header">
+          <div class="section-icon icon-purple">🔐</div>
+          <div class="title-group">
+            <h2>2. Acesso & Login</h2>
+            <p>Como entrar no sistema</p>
+          </div>
+        </div>
+
+        <h3>Login com Google</h3>
+        <p>O GTI utiliza autenticação exclusiva via conta Google. Não há usuários e senhas cadastrados manualmente.</p>
+
+        <ol class="steps">
+          <li>
+            <div class="step-content">
+              <div class="step-title">Acesse a URL do GTI no navegador</div>
+              <div class="step-desc">Você será redirecionado automaticamente para a página de login caso não esteja autenticado.</div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Clique em "Entrar com Google"</div>
+              <div class="step-desc">Uma janela pop-up do Google será aberta para seleção da conta.</div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Selecione sua conta Google corporativa</div>
+              <div class="step-desc">Use o e-mail da empresa (@gogroup.com.br ou equivalente). Contas pessoais não terão acesso.</div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Aguarde o redirecionamento</div>
+              <div class="step-desc">Se seu e-mail estiver na allowlist e a conta estiver ativa, você será redirecionado ao Dashboard automaticamente.</div>
+            </div>
+          </li>
+        </ol>
+
+        <div class="tip tip-warning">
+          <span class="tip-icon">⚠️</span>
+          <div><strong>Acesso Restrito:</strong> Somente e-mails cadastrados na allowlist pelo Administrador têm permissão para entrar. Se você ver a página "Acesso não autorizado", solicite ao administrador que adicione seu e-mail.</div>
+        </div>
+
+        <h3>Perfil Sincronizado</h3>
+        <p>Após o primeiro login, o GTI cria automaticamente seu perfil com as informações da conta Google:</p>
+        <ul class="bullet">
+          <li>Nome completo</li>
+          <li>E-mail</li>
+          <li>Foto de perfil (avatar)</li>
+        </ul>
+
+        <p>Essas informações são <strong>sincronizadas automaticamente</strong> com o Google e não precisam ser alteradas no GTI.</p>
+
+        <h3>Sair do Sistema</h3>
+        <p>Para sair, clique na sua foto de perfil no canto superior direito da barra de topo e selecione <strong>"Sair"</strong>. Sua sessão será encerrada e você voltará para a tela de login.</p>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 3. PERFIS & PERMISSÕES ══════════════ -->
+      <section class="section" id="perfis">
+        <div class="section-header">
+          <div class="section-icon icon-amber">👤</div>
+          <div class="title-group">
+            <h2>3. Perfis & Permissões</h2>
+            <p>Entendendo os níveis de acesso</p>
+          </div>
+        </div>
+
+        <p>O GTI possui três perfis de usuário com diferentes níveis de acesso. O perfil é definido pelo Administrador no momento do cadastro na allowlist.</p>
+
+        <div class="card-grid-3">
+          <div class="card">
+            <div class="card-title"><span class="role role-member">Membro</span></div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Usuário padrão da equipe. Pode criar tarefas, editar as tarefas que criou ou está envolvido.</p>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="role role-lead">Lead</span></div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Líder da equipe. Pode gerenciar projetos, exportar tarefas e editar/arquivar qualquer tarefa em que esteja envolvido.</p>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="role role-admin">Admin</span></div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Administrador total. Acesso irrestrito: gerencia allowlist, categorias, projetos e todas as tarefas.</p>
+          </div>
+        </div>
+
+        <h3>Tabela Detalhada de Permissões</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Funcionalidade</th>
+                <th style="text-align:center">Membro</th>
+                <th style="text-align:center">Lead</th>
+                <th style="text-align:center">Admin</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Ver Dashboard, Kanban, Projetos</td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+              </tr>
+              <tr>
+                <td>Criar tarefas</td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+              </tr>
+              <tr>
+                <td>Editar tarefas próprias ¹</td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+              </tr>
+              <tr>
+                <td>Editar qualquer tarefa</td>
+                <td style="text-align:center"><span class="perm-no">✘</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+              </tr>
+              <tr>
+                <td>Arquivar qualquer tarefa</td>
+                <td style="text-align:center"><span class="perm-cond">~</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+              </tr>
+              <tr>
+                <td>Criar e editar projetos</td>
+                <td style="text-align:center"><span class="perm-no">✘</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+              </tr>
+              <tr>
+                <td>Exportar tarefas (CSV)</td>
+                <td style="text-align:center"><span class="perm-no">✘</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+              </tr>
+              <tr>
+                <td>Gerenciar categorias</td>
+                <td style="text-align:center"><span class="perm-no">✘</span></td>
+                <td style="text-align:center"><span class="perm-no">✘</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+              </tr>
+              <tr>
+                <td>Gerenciar allowlist (usuários)</td>
+                <td style="text-align:center"><span class="perm-no">✘</span></td>
+                <td style="text-align:center"><span class="perm-no">✘</span></td>
+                <td style="text-align:center"><span class="perm-yes">✔</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted)">¹ "Tarefas próprias" = tarefas que você criou, nas quais é o Responsável principal ou um Responsável adicional.</p>
+        <p style="font-size:12px;color:var(--text-muted)">~ Membro pode arquivar tarefas que criou ou nas quais é responsável.</p>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 4. NAVEGAÇÃO ══════════════ -->
+      <section class="section" id="navegacao">
+        <div class="section-header">
+          <div class="section-icon icon-sky">🗺️</div>
+          <div class="title-group">
+            <h2>4. Navegação</h2>
+            <p>Entendendo a estrutura de páginas</p>
+          </div>
+        </div>
+
+        <p>O GTI possui uma barra lateral de navegação fixa no lado esquerdo da tela (em mobile, aparece como barra inferior). Ela contém os 6 módulos principais do sistema.</p>
+
+        <div class="nav-mockup" style="max-width:220px;margin-bottom:24px">
+          <div class="nm-item active">📊&nbsp; Dashboard</div>
+          <div class="nm-item">⬛&nbsp; Meu Kanban</div>
+          <div class="nm-item">🗂️&nbsp; Kanban da Equipe</div>
+          <div class="nm-item">📋&nbsp; Lista de Tarefas</div>
+          <div class="nm-item">📁&nbsp; Projetos</div>
+          <div class="nm-item">⚙️&nbsp; Configurações</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Seção</th>
+                <th>URL</th>
+                <th>Para que serve</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Dashboard</strong></td>
+                <td><span class="mono">/dashboard</span></td>
+                <td>Visão geral e KPIs da equipe</td>
+              </tr>
+              <tr>
+                <td><strong>Meu Kanban</strong></td>
+                <td><span class="mono">/my-board</span></td>
+                <td>Suas tarefas pessoais em formato Kanban</td>
+              </tr>
+              <tr>
+                <td><strong>Kanban da Equipe</strong></td>
+                <td><span class="mono">/team-board</span></td>
+                <td>Todas as tarefas da equipe com filtros avançados</td>
+              </tr>
+              <tr>
+                <td><strong>Lista de Tarefas</strong></td>
+                <td><span class="mono">/tasks</span></td>
+                <td>Tabela ordenável e filtrável de tarefas</td>
+              </tr>
+              <tr>
+                <td><strong>Projetos</strong></td>
+                <td><span class="mono">/projects</span></td>
+                <td>Organização de tarefas por projeto</td>
+              </tr>
+              <tr>
+                <td><strong>Configurações</strong></td>
+                <td><span class="mono">/settings</span></td>
+                <td>Perfil, allowlist e categorias (admin)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Barra Superior (Topbar)</h3>
+        <p>No topo de todas as páginas há uma barra com:</p>
+        <ul class="bullet">
+          <li><strong>Logo GTI</strong> — clique para voltar ao Dashboard</li>
+          <li><strong>Ícone de Notificações</strong> 🔔 — badge vermelho com contagem de notificações não lidas</li>
+          <li><strong>Avatar do usuário</strong> — clique para ver seu perfil e opção de sair</li>
+        </ul>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 5. DASHBOARD ══════════════ -->
+      <section class="section" id="dashboard">
+        <div class="section-header">
+          <div class="section-icon icon-blue">📊</div>
+          <div class="title-group">
+            <h2>5. Dashboard</h2>
+            <p>Painel executivo com métricas da equipe</p>
+          </div>
+        </div>
+
+        <p>O Dashboard é a página inicial após o login. Oferece uma visão rápida do estado atual das tarefas da equipe através de 4 indicadores principais e 2 painéis informativos.</p>
+
+        <h3>KPIs (Indicadores)</h3>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">📋 Minhas Abertas</div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Número de tarefas suas que ainda não foram concluídas (status não final).</p>
+          </div>
+          <div class="card">
+            <div class="card-title" style="color:var(--danger)">🔴 Atrasadas (minhas)</div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Suas tarefas que estão com prazo vencido. Aparece em vermelho quando o valor for maior que zero.</p>
+          </div>
+          <div class="card">
+            <div class="card-title" style="color:#d97706">🟡 Bloqueadas (equipe)</div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Total de tarefas da equipe com status "Bloqueada". Aparece em âmbar quando maior que zero.</p>
+          </div>
+          <div class="card">
+            <div class="card-title" style="color:var(--success)">✅ Concluídas na Semana</div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Tarefas com status final marcadas nos últimos 7 dias. Indica a produtividade recente da equipe.</p>
+          </div>
+        </div>
+
+        <h3>Painéis Informativos</h3>
+        <div class="card">
+          <div class="card-title">📅 Meus Prazos Próximos</div>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:0">Lista os seus próximos 7 prazos mais próximos. Para cada tarefa mostra: título (clicável para ir ao detalhe), data do prazo e badge de prioridade. Exclui tarefas concluídas e arquivadas.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Distribuição por Status</div>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:0">Gráfico de barras empilhadas mostrando a distribuição percentual e absoluta de todas as tarefas da equipe por status. Cada status tem uma cor distinta. O total de tarefas é exibido abaixo.</p>
+        </div>
+
+        <div class="tip tip-info">
+          <span class="tip-icon">💡</span>
+          <div>Clique no título de qualquer tarefa no painel "Meus Prazos Próximos" para ir diretamente à página de detalhe da tarefa.</div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 6. TAREFAS ══════════════ -->
+      <section class="section" id="tarefas">
+        <div class="section-header">
+          <div class="section-icon icon-green">✅</div>
+          <div class="title-group">
+            <h2>6. Criando e Editando Tarefas</h2>
+            <p>O núcleo do sistema</p>
+          </div>
+        </div>
+
+        <p>Uma tarefa é a unidade básica de trabalho no GTI. Tarefas podem ser criadas a partir de qualquer quadro Kanban, da lista de tarefas ou da página de um projeto.</p>
+
+        <h3>Como Criar uma Tarefa</h3>
+        <p>Clique no botão <strong>"+ Nova tarefa"</strong> em qualquer página do GTI. Um painel deslizante abrirá pela direita da tela com o formulário.</p>
+
+        <h3>Campos do Formulário</h3>
+        <ul class="field-list">
+          <li>
+            <span class="field-name">Título <span class="req">OBRIGATÓRIO</span></span>
+            <span class="field-desc">Nome da tarefa. Máximo de 140 caracteres. Seja claro e específico.</span>
+          </li>
+          <li>
+            <span class="field-name">Descrição <span class="opt">OPCIONAL</span></span>
+            <span class="field-desc">Detalhamento da tarefa, contexto, requisitos. Máximo de 4.000 caracteres. Suporta quebras de linha.</span>
+          </li>
+          <li>
+            <span class="field-name">Status <span class="req">OBRIGATÓRIO</span></span>
+            <span class="field-desc">Estado atual da tarefa. É preenchido automaticamente com o primeiro status disponível (ex: "A fazer"). Pode ser alterado a qualquer momento.</span>
+          </li>
+          <li>
+            <span class="field-name">Prioridade <span class="opt">OPCIONAL</span></span>
+            <span class="field-desc">Nível de urgência. Padrão: <span class="pri pri-medium">Média</span>. Opções: <span class="pri pri-low">Baixa</span> <span class="pri pri-medium">Média</span> <span class="pri pri-high">Alta</span> <span class="pri pri-urgent">Urgente</span></span>
+          </li>
+          <li>
+            <span class="field-name">Responsável principal <span class="opt">OPCIONAL</span></span>
+            <span class="field-desc">O membro da equipe com responsabilidade primária pela tarefa. Aparece em destaque nos cards e listas.</span>
+          </li>
+          <li>
+            <span class="field-name">Outros responsáveis <span class="opt">OPCIONAL</span></span>
+            <span class="field-desc">Membros adicionais envolvidos na tarefa. Seleção por checkboxes. Visível apenas quando há mais de um usuário no sistema.</span>
+          </li>
+          <li>
+            <span class="field-name">Categoria <span class="opt">OPCIONAL</span></span>
+            <span class="field-desc">Classificação colorida da tarefa (ex: Manutenção, Compliance, RH). Gerenciada pelos administradores nas Configurações.</span>
+          </li>
+          <li>
+            <span class="field-name">Projeto <span class="opt">OPCIONAL</span></span>
+            <span class="field-desc">Associa a tarefa a um projeto existente. Quando criada da página de projeto, este campo é preenchido automaticamente.</span>
+          </li>
+          <li>
+            <span class="field-name">Início <span class="opt">OPCIONAL</span></span>
+            <span class="field-desc">Data de início planejada para a tarefa.</span>
+          </li>
+          <li>
+            <span class="field-name">Prazo <span class="opt">OPCIONAL</span></span>
+            <span class="field-desc">Data limite de conclusão. Quando vencida e a tarefa não está concluída, aparece destacada em vermelho nos cards.</span>
+          </li>
+        </ul>
+
+        <div class="tip tip-success">
+          <span class="tip-icon">✅</span>
+          <div>Após criar a tarefa, o formulário é limpo automaticamente e a tarefa aparece imediatamente no quadro Kanban na coluna do status selecionado.</div>
+        </div>
+
+        <h3>Editando uma Tarefa</h3>
+        <p>Há três formas de editar uma tarefa:</p>
+        <ol class="ordered">
+          <li><strong>Botão de edição no card Kanban:</strong> Passe o mouse sobre o card e clique no ícone de lápis (✏️).</li>
+          <li><strong>Botão de edição na Lista:</strong> Passe o mouse sobre a linha da tarefa e clique no ícone de lápis.</li>
+          <li><strong>Dentro do Detalhe da Tarefa:</strong> Use os campos do painel lateral direito para editar individualmente.</li>
+        </ol>
+
+        <div class="tip tip-warning">
+          <span class="tip-icon">⚠️</span>
+          <div>Você só pode editar tarefas se for: o criador da tarefa, o responsável principal, um responsável adicional, ou tiver perfil Lead ou Admin.</div>
+        </div>
+
+        <h3>Arquivando uma Tarefa</h3>
+        <p>Tarefas arquivadas são removidas de todas as visualizações (Kanban, Lista, Projetos, Dashboard). O arquivamento não exclui a tarefa permanentemente.</p>
+        <p>Para arquivar: acesse o <strong>Detalhe da Tarefa</strong> → clique no botão vermelho <strong>"Arquivar tarefa"</strong> → confirme no diálogo de confirmação.</p>
+
+        <div class="tip tip-danger">
+          <span class="tip-icon">🚨</span>
+          <div><strong>Atenção:</strong> Tarefas arquivadas não aparecem mais no sistema e não é possível desfazer facilmente. Apenas arquive quando a tarefa estiver definitivamente encerrada e não houver mais necessidade de acompanhamento.</div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 7. KANBAN ══════════════ -->
+      <section class="section" id="kanban">
+        <div class="section-header">
+          <div class="section-icon icon-purple">🗂️</div>
+          <div class="title-group">
+            <h2>7. Quadros Kanban</h2>
+            <p>Visualização e gestão visual de tarefas</p>
+          </div>
+        </div>
+
+        <p>O GTI oferece dois quadros Kanban: o <strong>Meu Kanban</strong> (pessoal) e o <strong>Kanban da Equipe</strong> (visão completa). Ambos exibem tarefas em colunas por status, com suporte a arrastar e soltar.</p>
+
+        <!-- KANBAN MOCKUP -->
+        <div class="kanban-mockup" style="margin-bottom:24px">
+          <div class="km-col">
+            <div class="km-col-header">
+              <div class="km-col-dot" style="background:#6366f1"></div>
+              A Fazer <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:4px">3</span>
+            </div>
+            <div class="km-card">
+              <div class="km-card-title">Revisar contratos de frete</div>
+              <div class="km-card-meta"><span class="pri pri-high" style="font-size:10px;padding:1px 6px">Alta</span></div>
+            </div>
+            <div class="km-card">
+              <div class="km-card-title">Atualizar planilha de rotas</div>
+              <div class="km-card-meta"><span class="pri pri-medium" style="font-size:10px;padding:1px 6px">Média</span></div>
+            </div>
+          </div>
+          <div class="km-col">
+            <div class="km-col-header">
+              <div class="km-col-dot" style="background:#f59e0b"></div>
+              Em Progresso <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:4px">1</span>
+            </div>
+            <div class="km-card">
+              <div class="km-card-title">Implementar rastreamento GPS</div>
+              <div class="km-card-meta"><span class="pri pri-urgent" style="font-size:10px;padding:1px 6px">Urgente</span></div>
+            </div>
+          </div>
+          <div class="km-col">
+            <div class="km-col-header">
+              <div class="km-col-dot" style="background:#22c55e"></div>
+              Concluída <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:4px">2</span>
+            </div>
+            <div class="km-card">
+              <div class="km-card-title">Treinamento de motoristas</div>
+              <div class="km-card-meta"><span class="pri pri-low" style="font-size:10px;padding:1px 6px">Baixa</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Arrastar e Soltar</h3>
+        <p>Para mudar o status de uma tarefa, simplesmente <strong>clique e arraste</strong> o card da coluna atual para a coluna do novo status. O status da tarefa é atualizado automaticamente.</p>
+
+        <div class="tip tip-info">
+          <span class="tip-icon">💡</span>
+          <div>Para ativar o arrastar, segure o card por um instante antes de começar a mover. Isso evita arrastar acidentalmente quando você quer apenas clicar.</div>
+        </div>
+
+        <h3>Cards de Tarefa — Informações Exibidas</h3>
+        <p>Cada card no Kanban exibe de forma compacta:</p>
+        <ul class="bullet">
+          <li><strong>Título</strong> da tarefa</li>
+          <li><strong>Badge de categoria</strong> (se houver)</li>
+          <li><strong>Nome do projeto</strong> (se associado)</li>
+          <li><strong>Badge de prioridade</strong></li>
+          <li><strong>Data do prazo</strong> (em vermelho se vencida)</li>
+          <li><strong>Contagem de comentários</strong> 💬</li>
+          <li><strong>Progresso do checklist</strong> (ex: 2/5)</li>
+          <li><strong>Avatares dos responsáveis</strong></li>
+        </ul>
+
+        <div class="tip tip-warning">
+          <span class="tip-icon">⚠️</span>
+          <div>Tarefas com status "Bloqueada" aparecem com <strong>borda e fundo vermelhos</strong> para máxima visibilidade. Resolva o bloqueio o mais rápido possível.</div>
+        </div>
+
+        <h3>Meu Kanban — Filtros Disponíveis</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Filtro</th><th>Descrição</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>🔍 Buscar por título</td><td>Busca em tempo real no título das tarefas</td></tr>
+              <tr><td>Prioridade</td><td>Filtra por: Urgente, Alta, Média, Baixa</td></tr>
+              <tr><td>Categoria</td><td>Filtra por categoria específica</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Kanban da Equipe — Filtros Avançados</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Filtro</th><th>Descrição</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>🔍 Buscar por título</td><td>Busca em tempo real no título das tarefas (delay de 350ms)</td></tr>
+              <tr><td>⭐ Apenas minhas</td><td>Toggle para mostrar somente tarefas onde você é responsável</td></tr>
+              <tr><td>Prioridade</td><td>Filtra por: Urgente, Alta, Média, Baixa</td></tr>
+              <tr><td>Responsável</td><td>Filtra por responsável principal específico</td></tr>
+              <tr><td>Criador</td><td>Filtra por quem criou a tarefa</td></tr>
+              <tr><td>Categoria</td><td>Filtra por categoria específica</td></tr>
+              <tr><td>Projeto</td><td>Filtra por projeto específico</td></tr>
+              <tr><td>Status</td><td>Filtra por status específico</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Quando nenhuma tarefa corresponde aos filtros aplicados, uma mensagem de estado vazio aparece com o botão <strong>"Limpar filtros"</strong>.</p>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 8. LISTA DE TAREFAS ══════════════ -->
+      <section class="section" id="lista">
+        <div class="section-header">
+          <div class="section-icon icon-teal">📋</div>
+          <div class="title-group">
+            <h2>8. Lista de Tarefas</h2>
+            <p>Visão tabular com ordenação e filtros</p>
+          </div>
+        </div>
+
+        <p>A Lista de Tarefas em <span class="mono">/tasks</span> exibe todas as tarefas ativas em formato de tabela, ideal para uma visão analítica e para exportação de dados.</p>
+
+        <h3>Filtros da Lista</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Filtro</th><th>Como Usar</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>🔍 Busca</td><td>Digite parte do título para filtrar instantaneamente</td></tr>
+              <tr><td>Status</td><td>Dropdown: Todos / qualquer status específico</td></tr>
+              <tr><td>Prioridade</td><td>Dropdown: Todas / Urgente / Alta / Média / Baixa</td></tr>
+              <tr><td>Categoria</td><td>Dropdown: Todas / qualquer categoria ativa</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Colunas da Tabela</h3>
+        <p>Todas as colunas são <strong>ordenáveis</strong>. Clique no cabeçalho da coluna para ordenar. Clique novamente para inverter a ordem (crescente/decrescente).</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Coluna</th><th>Conteúdo</th><th>Ordenável</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Título</strong></td><td>Nome da tarefa + nome do projeto (abaixo)</td><td>✔ Alfabético</td></tr>
+              <tr><td><strong>Status</strong></td><td>Badge colorido com o status atual</td><td>✔ Alfabético</td></tr>
+              <tr><td><strong>Prioridade</strong></td><td>Badge colorido com a prioridade</td><td>✔ Por nível</td></tr>
+              <tr><td><strong>Responsável</strong></td><td>Nome do responsável principal ou "—"</td><td>✔ Alfabético</td></tr>
+              <tr><td><strong>Categoria</strong></td><td>Badge colorido ou "—"</td><td>✔ Alfabético</td></tr>
+              <tr><td><strong>Prazo</strong></td><td>Data do prazo (vermelho se vencida)</td><td>✔ Por data</td></tr>
+              <tr><td><strong>Atualizado</strong></td><td>Data/hora da última atualização</td><td>✔ Por data</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Ações na Lista</h3>
+        <ul class="bullet">
+          <li><strong>Clicar no título:</strong> Navega para a página de detalhe da tarefa</li>
+          <li><strong>Ícone de lápis (hover):</strong> Abre o painel de edição da tarefa</li>
+          <li><strong>Contador no rodapé:</strong> Mostra quantas tarefas estão listadas após os filtros</li>
+        </ul>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 9. DETALHE DA TAREFA ══════════════ -->
+      <section class="section" id="detalhes">
+        <div class="section-header">
+          <div class="section-icon icon-orange">🔍</div>
+          <div class="title-group">
+            <h2>9. Página de Detalhe da Tarefa</h2>
+            <p>Toda a informação de uma tarefa em um só lugar</p>
+          </div>
+        </div>
+
+        <p>Acesse o detalhe de qualquer tarefa clicando no seu título na Lista ou no Dashboard. A URL segue o padrão <span class="mono">/tasks/:id</span>.</p>
+        <p>A página é dividida em duas áreas: <strong>Conteúdo principal</strong> (esquerda) e <strong>Painel de edição</strong> (direita).</p>
+
+        <h3>Conteúdo Principal — Lado Esquerdo</h3>
+
+        <div class="card">
+          <div class="card-title">✏️ Título (Editável Inline)</div>
+          <p style="font-size:13px;color:var(--text-muted);margin:0">Clique no título ou no ícone de lápis para editar diretamente. Salva ao pressionar <kbd>Enter</kbd> ou clicar fora. Cancele com <kbd>Esc</kbd>.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📝 Descrição (Editável)</div>
+          <p style="font-size:13px;color:var(--text-muted);margin:0">Clique em <strong>"Editar"</strong> para abrir o campo de texto. Use <strong>"Salvar"</strong> ou <strong>"Cancelar"</strong> após editar. Quando vazia, exibe: "Sem descrição. Clique em Editar para adicionar."</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">☑️ Checklist</div>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px">Lista de itens para acompanhar subtarefas. Uma barra de progresso mostra o percentual de conclusão.</p>
+          <ul style="font-size:13px;color:var(--text-muted);padding-left:16px;margin:0">
+            <li>Clique em <strong>"+"</strong> para adicionar um item</li>
+            <li>Pressione <kbd>Enter</kbd> para salvar o item</li>
+            <li>Marque o checkbox para concluir um item (texto riscado)</li>
+            <li>Passe o mouse sobre o item e clique no ícone de lixeira para excluir</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title">💬 Comentários</div>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px">Thread de comentários da tarefa. Cada comentário exibe: avatar, nome, tempo relativo e texto.</p>
+          <ul style="font-size:13px;color:var(--text-muted);padding-left:16px;margin:0">
+            <li>Para comentar: clique na área de texto no final, escreva e clique em <strong>"Comentar"</strong></li>
+            <li>Atalho: <kbd>Ctrl</kbd> + <kbd>Enter</kbd> para enviar o comentário</li>
+            <li>Para excluir um comentário seu: passe o mouse sobre ele e clique no ícone de lixeira</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📜 Histórico de Atividades</div>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px">Log cronológico automático de tudo que aconteceu na tarefa. Registra:</p>
+          <ul style="font-size:13px;color:var(--text-muted);padding-left:16px;margin:0">
+            <li>Criação da tarefa</li>
+            <li>Atualizações de campos</li>
+            <li>Mudanças de status</li>
+            <li>Adição/remoção de responsáveis</li>
+            <li>Comentários adicionados</li>
+            <li>Itens de checklist marcados como concluídos</li>
+            <li>Arquivamento da tarefa</li>
+          </ul>
+        </div>
+
+        <h3>Painel Lateral — Lado Direito</h3>
+        <p>O painel lateral permite editar os metadados da tarefa individualmente. Cada campo salva automaticamente ao ser alterado:</p>
+        <ul class="field-list">
+          <li><span class="field-name">Status</span><span class="field-desc">Dropdown com todos os status ativos (exceto arquivado)</span></li>
+          <li><span class="field-name">Prioridade</span><span class="field-desc">Dropdown: Baixa / Média / Alta / Urgente</span></li>
+          <li><span class="field-name">Responsável principal</span><span class="field-desc">Dropdown com todos os membros da equipe</span></li>
+          <li><span class="field-name">Responsáveis adicionais</span><span class="field-desc">Lista de checkboxes com membros da equipe (exceto o responsável principal)</span></li>
+          <li><span class="field-name">Categoria</span><span class="field-desc">Dropdown com categorias ativas + opção "Nenhuma"</span></li>
+          <li><span class="field-name">Projeto</span><span class="field-desc">Dropdown com projetos ativos + opção "Nenhum"</span></li>
+          <li><span class="field-name">Início</span><span class="field-desc">Seletor de data de início</span></li>
+          <li><span class="field-name">Prazo</span><span class="field-desc">Seletor de data limite</span></li>
+        </ul>
+
+        <div class="tip tip-info">
+          <span class="tip-icon">💡</span>
+          <div>Se você não tem permissão para editar a tarefa, o painel lateral exibe a mensagem: <em>"Visualização apenas. Você não tem permissão para editar esta tarefa."</em> — os campos ficam somente leitura.</div>
+        </div>
+
+        <h3>Arquivar Tarefa</h3>
+        <p>O botão vermelho <strong>"Arquivar tarefa"</strong> fica no final do painel lateral direito. Um diálogo de confirmação é exibido antes de arquivar, alertando que a tarefa não poderá mais ser visualizada normalmente.</p>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 10. PROJETOS ══════════════ -->
+      <section class="section" id="projetos">
+        <div class="section-header">
+          <div class="section-icon icon-blue">📁</div>
+          <div class="title-group">
+            <h2>10. Projetos</h2>
+            <p>Organização de tarefas por iniciativa ou área</p>
+          </div>
+        </div>
+
+        <p>Projetos agrupam tarefas relacionadas em torno de um objetivo comum (ex: "Implantação ERP", "Frota 2025"). Qualquer tarefa pode ser associada a um projeto.</p>
+
+        <h3>Lista de Projetos</h3>
+        <p>Acesse em <span class="mono">/projects</span>. Os projetos são exibidos em cards em grade. Cada card mostra:</p>
+        <ul class="bullet">
+          <li>Nome do projeto (link clicável)</li>
+          <li>Badge da categoria (se definida)</li>
+          <li>Descrição (máximo 3 linhas)</li>
+          <li>Data de criação</li>
+        </ul>
+
+        <h3>Criar um Projeto</h3>
+        <p>Visível apenas para perfis <span class="role role-lead">Lead</span> e <span class="role role-admin">Admin</span>. Clique em <strong>"+ Novo projeto"</strong>.</p>
+        <ul class="field-list">
+          <li><span class="field-name">Nome <span class="req">OBRIGATÓRIO</span></span><span class="field-desc">Nome do projeto</span></li>
+          <li><span class="field-name">Descrição <span class="opt">OPCIONAL</span></span><span class="field-desc">Descrição detalhada do projeto</span></li>
+          <li><span class="field-name">Categoria <span class="opt">OPCIONAL</span></span><span class="field-desc">Classifica o projeto em uma categoria existente</span></li>
+        </ul>
+
+        <h3>Detalhe do Projeto</h3>
+        <p>Clique no nome de um projeto para acessar sua página detalhada. Ela exibe:</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">📊 Métricas do Projeto</div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">4 indicadores: Total de tarefas, Em aberto, Concluídas, Atrasadas (vermelho quando > 0).</p>
+          </div>
+          <div class="card">
+            <div class="card-title">🗂️ Kanban do Projeto</div>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Quadro Kanban filtrado para mostrar somente as tarefas deste projeto. Com arrastar e soltar e botão "Nova tarefa".</p>
+          </div>
+        </div>
+
+        <h3>Editar Nome e Descrição do Projeto</h3>
+        <p>Na página de detalhe do projeto, clique no nome ou na descrição para editar diretamente (inline). Disponível para <span class="role role-lead">Lead</span> e <span class="role role-admin">Admin</span>.</p>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 11. NOTIFICAÇÕES ══════════════ -->
+      <section class="section" id="notificacoes">
+        <div class="section-header">
+          <div class="section-icon icon-red">🔔</div>
+          <div class="title-group">
+            <h2>11. Notificações</h2>
+            <p>Alertas em tempo real de atribuições</p>
+          </div>
+        </div>
+
+        <p>O GTI notifica você em tempo real sempre que for adicionado como responsável em uma tarefa. As notificações ficam centralizadas no <strong>ícone de sino 🔔</strong> no canto superior direito.</p>
+
+        <h3>Ícone de Notificações</h3>
+        <ul class="bullet">
+          <li>Um <strong>badge vermelho</strong> mostra a contagem de notificações não lidas</li>
+          <li>Quando há mais de 9 notificações, exibe <strong>"9+"</strong></li>
+          <li>Clique no ícone para abrir o painel de notificações</li>
+        </ul>
+
+        <h3>Painel de Notificações</h3>
+        <p>Ao clicar no sino, um popover se abre mostrando a lista de notificações. Cada notificação exibe:</p>
+        <ul class="bullet">
+          <li><strong>Indicador colorido:</strong> ponto vermelho = não lida; ponto cinza = lida</li>
+          <li><strong>Título da tarefa</strong> (clicável — navega para o detalhe)</li>
+          <li><strong>Nome do projeto</strong> ou "Tarefa sem projeto"</li>
+          <li><strong>Tempo relativo</strong> (ex: "há 2 horas")</li>
+        </ul>
+
+        <h3>Ações do Painel</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Ação</th><th>Quando aparece</th><th>O que faz</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Marcar tudo como lido</td><td>Quando há não lidas</td><td>Marca todas as notificações como lidas</td></tr>
+              <tr><td>Limpar</td><td>Quando há qualquer notificação</td><td>Remove todas as notificações da lista</td></tr>
+              <tr><td>Clicar em uma notificação</td><td>Sempre</td><td>Navega para a tarefa e marca como lida</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tip tip-info">
+          <span class="tip-icon">💡</span>
+          <div>Quando o painel de notificações é fechado, todas as notificações abertas são automaticamente marcadas como lidas.</div>
+        </div>
+
+        <h3>Toast de Notificação</h3>
+        <p>Além do painel, quando você recebe uma nova atribuição, uma mensagem aparece brevemente no canto da tela: <strong>"Nova tarefa atribuída"</strong> com o título da tarefa.</p>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 12. EXPORTAR CSV ══════════════ -->
+      <section class="section" id="exportar">
+        <div class="section-header">
+          <div class="section-icon icon-green">📤</div>
+          <div class="title-group">
+            <h2>12. Exportar Tarefas (CSV)</h2>
+            <p>Exporte tarefas para análise externa</p>
+          </div>
+        </div>
+
+        <p>Disponível para <span class="role role-lead">Lead</span> e <span class="role role-admin">Admin</span>. Acesse na página <strong>Lista de Tarefas</strong> (<span class="mono">/tasks</span>) e clique em <strong>"Exportar CSV"</strong>.</p>
+
+        <h3>Opções de Exportação</h3>
+        <p>Um diálogo se abre com opções de filtro por data:</p>
+        <ul class="field-list">
+          <li>
+            <span class="field-name">Campo de data <span class="opt">OPCIONAL</span></span>
+            <span class="field-desc">Escolha entre: <em>Data de criação</em> ou <em>Data de prazo</em></span>
+          </li>
+          <li>
+            <span class="field-name">De <span class="opt">OPCIONAL</span></span>
+            <span class="field-desc">Data inicial do intervalo</span>
+          </li>
+          <li>
+            <span class="field-name">Até <span class="opt">OPCIONAL</span></span>
+            <span class="field-desc">Data final do intervalo</span>
+          </li>
+        </ul>
+        <p>O diálogo exibe a <strong>contagem de tarefas</strong> que serão exportadas com o filtro atual. Clique em <strong>"Exportar"</strong> para baixar o arquivo.</p>
+
+        <h3>Estrutura do Arquivo CSV</h3>
+        <p>O arquivo é nomeado automaticamente como <span class="mono">tarefas-gti-AAAA-MM-DD.csv</span> e contém as colunas:</p>
+        <div class="csv-preview">
+ID,Titulo,Status,Prioridade,Responsavel,Categoria,Projeto,Data de inicio,Prazo,Criado em,Atualizado em
+a1b2c3...,Revisar contratos,Em Progresso,Alta,João Silva,Compliance,Frota 2025,2025-01-10,2025-01-31,2025-01-05T10:00:00Z,2025-01-15T14:30:00Z
+        </div>
+
+        <div class="tip tip-info">
+          <span class="tip-icon">💡</span>
+          <div>Os filtros aplicados na Lista de Tarefas (busca, status, prioridade, categoria) <strong>não</strong> são carregados automaticamente no diálogo de exportação. O CSV exporta com base nos filtros de data que você configurar no diálogo.</div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 13. CONFIGURAÇÕES ══════════════ -->
+      <section class="section" id="configuracoes">
+        <div class="section-header">
+          <div class="section-icon icon-slate">⚙️</div>
+          <div class="title-group">
+            <h2>13. Configurações</h2>
+            <p>Perfil e administração do sistema</p>
+          </div>
+        </div>
+
+        <p>Acesse em <span class="mono">/settings</span>. Todos os usuários podem ver seu perfil. Seções administrativas são visíveis apenas para <span class="role role-admin">Admin</span>.</p>
+
+        <h3>Meu Perfil</h3>
+        <p>Exibe as informações sincronizadas via Google:</p>
+        <ul class="bullet">
+          <li><strong>Foto de perfil</strong> (avatar)</li>
+          <li><strong>Nome completo</strong></li>
+          <li><strong>E-mail</strong></li>
+          <li><strong>Perfil de acesso:</strong> <span class="role role-member">Membro</span>, <span class="role role-lead">Lead</span> ou <span class="role role-admin">Admin</span></li>
+        </ul>
+        <div class="tip tip-info">
+          <span class="tip-icon">💡</span>
+          <div>Os dados do perfil são sincronizados automaticamente com o Google OAuth. Para alterar seu nome ou foto, altere-os na sua conta Google.</div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 14. CATEGORIAS ══════════════ -->
+      <section class="section" id="categorias">
+        <div class="section-header">
+          <div class="section-icon icon-pink">🏷️</div>
+          <div class="title-group">
+            <h2>14. Gerenciar Categorias</h2>
+            <p>Classificação visual de tarefas e projetos · Somente Admin</p>
+          </div>
+        </div>
+
+        <p>Categorias permitem classificar tarefas e projetos por tipo ou área (ex: Manutenção, Compliance, RH). Cada categoria tem um nome e uma cor. Disponível em <span class="mono">/settings</span>.</p>
+
+        <h3>Criar uma Categoria</h3>
+        <ul class="field-list">
+          <li>
+            <span class="field-name">Cor <span class="req">OBRIGATÓRIO</span></span>
+            <span class="field-desc">Clique no quadrado colorido para abrir o seletor de cor. Padrão: roxo (#6366f1).</span>
+          </li>
+          <li>
+            <span class="field-name">Nome <span class="req">OBRIGATÓRIO</span></span>
+            <span class="field-desc">Nome da categoria (ex: Manutenção, Compliance, Frota).</span>
+          </li>
+        </ul>
+        <p>Clique em <strong>"Criar categoria"</strong>. Um slug é gerado automaticamente (ex: <span class="mono">manutencao</span>).</p>
+
+        <h3>Gerenciar Categorias Existentes</h3>
+        <p>A tabela de categorias exibe para cada uma:</p>
+        <ul class="bullet">
+          <li><strong>Ponto colorido + nome</strong></li>
+          <li><strong>Slug</strong> (identificador único gerado automaticamente)</li>
+          <li><strong>Toggle Ativa</strong> — desativar oculta a categoria dos seletores de tarefas (não remove das tarefas existentes)</li>
+          <li><strong>Editar (✏️):</strong> edição inline de cor e nome</li>
+          <li><strong>Excluir (🗑️):</strong> um diálogo de confirmação alerta que tarefas vinculadas perderão a categoria</li>
+        </ul>
+
+        <div class="tip tip-danger">
+          <span class="tip-icon">🚨</span>
+          <div><strong>Cuidado ao excluir categorias:</strong> A exclusão é permanente. Tarefas que usam a categoria perderão essa classificação. Prefira desativar a categoria se quiser apenas impedí-la de ser usada em novas tarefas.</div>
+        </div>
+
+        <p>A área exibe estatísticas: <em>"X categoria(s) · Y ativa(s)"</em></p>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 15. ALLOWLIST ══════════════ -->
+      <section class="section" id="allowlist">
+        <div class="section-header">
+          <div class="section-icon icon-amber">👥</div>
+          <div class="title-group">
+            <h2>15. Gerenciar Allowlist (Usuários)</h2>
+            <p>Controle quem pode acessar o GTI · Somente Admin</p>
+          </div>
+        </div>
+
+        <p>A allowlist define quais e-mails têm permissão para fazer login no GTI. Qualquer conta Google não listada aqui receberá "Acesso não autorizado" ao tentar entrar.</p>
+
+        <h3>Adicionar um Novo Usuário</h3>
+        <ol class="steps">
+          <li>
+            <div class="step-content">
+              <div class="step-title">Preencha o e-mail</div>
+              <div class="step-desc">Digite o e-mail corporativo completo (ex: colaborador@empresa.com.br).</div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Selecione o perfil</div>
+              <div class="step-desc">Escolha: <span class="role role-member">Membro</span>, <span class="role role-lead">Lead</span> ou <span class="role role-admin">Admin</span></div>
+            </div>
+          </li>
+          <li>
+            <div class="step-content">
+              <div class="step-title">Clique em "Adicionar"</div>
+              <div class="step-desc">O usuário aparece na lista e poderá fazer login imediatamente.</div>
+            </div>
+          </li>
+        </ol>
+
+        <h3>Gerenciar Usuários Existentes</h3>
+        <p>A tabela exibe: E-mail | Perfil | Ativo | Ações</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Ação</th><th>Como Fazer</th><th>Efeito</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Alterar perfil</td>
+                <td>Clique no dropdown na coluna "Perfil"</td>
+                <td>Muda o nível de acesso imediatamente</td>
+              </tr>
+              <tr>
+                <td>Ativar/Desativar</td>
+                <td>Clique no toggle na coluna "Ativo"</td>
+                <td>Desativado = perde acesso no próximo login</td>
+              </tr>
+              <tr>
+                <td>Remover usuário</td>
+                <td>Clique no ícone de lixeira vermelho</td>
+                <td>Abre confirmação. Após confirmar, o acesso é revogado</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tip tip-danger">
+          <span class="tip-icon">🚨</span>
+          <div><strong>Proteção de segurança:</strong> O sistema não permite excluir o último administrador ativo. O botão de exclusão fica desabilitado para evitar que o GTI fique sem administrador.</div>
+        </div>
+
+        <div class="tip tip-warning">
+          <span class="tip-icon">⚠️</span>
+          <div>Remover um usuário da allowlist <strong>não exclui</strong> as tarefas que ele criou ou é responsável. Apenas impede novos logins.</div>
+        </div>
+
+        <p>A área exibe estatísticas: <em>"X entrada(s) cadastrada(s) · Y ativa(s)"</em></p>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 16. FLUXOS DE TRABALHO ══════════════ -->
+      <section class="section" id="fluxos">
+        <div class="section-header">
+          <div class="section-icon icon-teal">🔄</div>
+          <div class="title-group">
+            <h2>16. Fluxos de Trabalho</h2>
+            <p>Guias passo a passo para tarefas comuns</p>
+          </div>
+        </div>
+
+        <details>
+          <summary>🆕 Criar e Atribuir uma Tarefa para um Colega</summary>
+          <div class="details-body">
+            <ol class="ordered">
+              <li>Acesse qualquer Kanban ou a Lista de Tarefas</li>
+              <li>Clique em <strong>"+ Nova tarefa"</strong></li>
+              <li>Preencha o <strong>Título</strong> (obrigatório)</li>
+              <li>Selecione o <strong>Status</strong> inicial (ex: "A Fazer")</li>
+              <li>Em <strong>Responsável principal</strong>, selecione o nome do colega</li>
+              <li>Opcionalmente defina prioridade, prazo e categoria</li>
+              <li>Clique em <strong>"Criar tarefa"</strong></li>
+              <li>O colega recebe uma notificação em tempo real</li>
+            </ol>
+          </div>
+        </details>
+
+        <details>
+          <summary>✅ Concluir uma Tarefa</summary>
+          <div class="details-body">
+            <ol class="ordered">
+              <li>Encontre a tarefa no Kanban, Lista ou Dashboard</li>
+              <li><strong>Opção A:</strong> No Kanban, arraste o card para a coluna de status final (ex: "Concluído")</li>
+              <li><strong>Opção B:</strong> Clique no card para abrir o detalhe, depois altere o Status no painel lateral direito</li>
+              <li>O campo "Concluído em" é preenchido automaticamente com a data/hora atual</li>
+              <li>A tarefa sai do contador "Em aberto" no Dashboard</li>
+            </ol>
+          </div>
+        </details>
+
+        <details>
+          <summary>📤 Exportar Tarefas de uma Semana</summary>
+          <div class="details-body">
+            <ol class="ordered">
+              <li>Acesse <strong>Lista de Tarefas</strong> (<span class="mono">/tasks</span>)</li>
+              <li>Clique em <strong>"Exportar CSV"</strong> (botão no topo direito)</li>
+              <li>Em <strong>"Campo de data"</strong> selecione "Data de criação" ou "Prazo"</li>
+              <li>Defina as datas <strong>De</strong> e <strong>Até</strong> para o período desejado</li>
+              <li>Verifique a contagem de tarefas exibida</li>
+              <li>Clique em <strong>"Exportar"</strong></li>
+              <li>O arquivo <span class="mono">tarefas-gti-AAAA-MM-DD.csv</span> será baixado automaticamente</li>
+            </ol>
+          </div>
+        </details>
+
+        <details>
+          <summary>👤 Adicionar um Novo Membro à Equipe</summary>
+          <div class="details-body">
+            <p><em>Requer perfil Admin.</em></p>
+            <ol class="ordered">
+              <li>Acesse <strong>Configurações</strong> (<span class="mono">/settings</span>)</li>
+              <li>Na seção <strong>"Gerenciar allowlist"</strong>, preencha o e-mail do novo membro</li>
+              <li>Selecione o perfil (<span class="role role-member">Membro</span>, <span class="role role-lead">Lead</span> ou <span class="role role-admin">Admin</span>)</li>
+              <li>Clique em <strong>"Adicionar"</strong></li>
+              <li>O membro já pode fazer login com a conta Google correspondente</li>
+            </ol>
+          </div>
+        </details>
+
+        <details>
+          <summary>🏷️ Criar e Usar Categorias</summary>
+          <div class="details-body">
+            <p><em>Criar categorias requer perfil Admin.</em></p>
+            <ol class="ordered">
+              <li>Acesse <strong>Configurações</strong> → seção <strong>"Categorias"</strong></li>
+              <li>Escolha uma cor clicando no seletor colorido</li>
+              <li>Digite o nome da categoria e clique em <strong>"Criar categoria"</strong></li>
+              <li>A categoria fica disponível em todas as tarefas e projetos</li>
+              <li>Ao criar/editar uma tarefa, selecione a categoria no campo correspondente</li>
+            </ol>
+          </div>
+        </details>
+
+        <details>
+          <summary>📁 Organizar Tarefas em um Projeto</summary>
+          <div class="details-body">
+            <ol class="ordered">
+              <li>Acesse <strong>Projetos</strong> (<span class="mono">/projects</span>)</li>
+              <li>Clique em <strong>"+ Novo projeto"</strong> (Lead/Admin) ou selecione um projeto existente</li>
+              <li>Na página do projeto, clique em <strong>"+ Nova tarefa"</strong> — o projeto é preenchido automaticamente</li>
+              <li>Ou: ao criar/editar qualquer tarefa, selecione o projeto no campo <strong>"Projeto"</strong></li>
+              <li>A tarefa aparecerá no Kanban e nas métricas da página do projeto</li>
+            </ol>
+          </div>
+        </details>
+
+        <details>
+          <summary>🔍 Encontrar Todas as Tarefas Atrasadas da Equipe</summary>
+          <div class="details-body">
+            <ol class="ordered">
+              <li>Acesse <strong>Kanban da Equipe</strong> (<span class="mono">/team-board</span>)</li>
+              <li>As tarefas com prazo vencido aparecem com <strong>borda e fundo vermelhos</strong></li>
+              <li>O Dashboard também exibe o card <strong>"Atrasadas (minhas)"</strong> com sua contagem pessoal</li>
+              <li>Na <strong>Lista de Tarefas</strong>, a coluna "Prazo" exibe datas vencidas em vermelho</li>
+            </ol>
+          </div>
+        </details>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 17. ATALHOS & DICAS ══════════════ -->
+      <section class="section" id="atalhos">
+        <div class="section-header">
+          <div class="section-icon icon-purple">⌨️</div>
+          <div class="title-group">
+            <h2>17. Atalhos & Dicas</h2>
+            <p>Use o GTI com mais eficiência</p>
+          </div>
+        </div>
+
+        <h3>Atalhos de Teclado</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Atalho</th><th>Onde</th><th>Ação</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td>
+                <td>Campo de comentário</td>
+                <td>Enviar comentário</td>
+              </tr>
+              <tr>
+                <td><kbd>Enter</kbd></td>
+                <td>Campo de item de checklist</td>
+                <td>Salvar item do checklist</td>
+              </tr>
+              <tr>
+                <td><kbd>Enter</kbd></td>
+                <td>Edição inline do título</td>
+                <td>Salvar o título editado</td>
+              </tr>
+              <tr>
+                <td><kbd>Esc</kbd></td>
+                <td>Qualquer edição inline</td>
+                <td>Cancelar edição sem salvar</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Dicas de Produtividade</h3>
+        <div class="card">
+          <div class="card-title">🎯 Use o Meu Kanban como foco</div>
+          <p style="font-size:13px;color:var(--text-muted);margin:0">O <strong>Meu Kanban</strong> mostra apenas suas tarefas. Use-o diariamente para focar no que precisa fazer. O <strong>Kanban da Equipe</strong> é para visão gerencial.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Verifique o Dashboard toda manhã</div>
+          <p style="font-size:13px;color:var(--text-muted);margin:0">Os KPIs de "Atrasadas" e "Bloqueadas" ficam em vermelho/âmbar quando há itens críticos. Trate-os com prioridade.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🔍 Use a Lista para análises</div>
+          <p style="font-size:13px;color:var(--text-muted);margin:0">A <strong>Lista de Tarefas</strong> com suas opções de ordenação e filtros é ideal para fazer análises de carga de trabalho ou preparar relatórios antes de exportar.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">✅ Checklists para subtarefas</div>
+          <p style="font-size:13px;color:var(--text-muted);margin:0">Quando uma tarefa tem múltiplos passos, use o <strong>Checklist</strong> na página de detalhe. A barra de progresso fica visível no card Kanban, facilitando o acompanhamento.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">💬 Comentários como histórico</div>
+          <p style="font-size:13px;color:var(--text-muted);margin:0">Use os comentários para registrar decisões, dúvidas e atualizações contextuais. O <strong>Histórico de Atividades</strong> abaixo dos comentários registra automaticamente todas as mudanças.</p>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ══════════════ 18. FAQ ══════════════ -->
+      <section class="section" id="faq">
+        <div class="section-header">
+          <div class="section-icon icon-sky">❓</div>
+          <div class="title-group">
+            <h2>18. Perguntas Frequentes</h2>
+            <p>Respostas para as dúvidas mais comuns</p>
+          </div>
+        </div>
+
+        <details>
+          <summary>Não consigo fazer login. O que faço?</summary>
+          <div class="details-body">
+            <p>Verifique se você está usando o e-mail corporativo correto. Se a mensagem for "Acesso não autorizado", seu e-mail não está na allowlist. Solicite ao <strong>Administrador</strong> que adicione seu e-mail em Configurações → Allowlist.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Não consigo editar uma tarefa. Por quê?</summary>
+          <div class="details-body">
+            <p>Para editar uma tarefa você precisa ser: o criador da tarefa, o responsável principal, um responsável adicional, ou ter perfil Lead ou Admin. Se não for nenhum desses casos e precisar editar, solicite ao responsável ou a um Lead/Admin.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Como faço para mudar o status de uma tarefa?</summary>
+          <div class="details-body">
+            <p>Há duas formas:</p>
+            <ol class="ordered">
+              <li><strong>Arrastar e soltar</strong> o card no Kanban para a coluna do novo status</li>
+              <li>Abrir o <strong>Detalhe da tarefa</strong> e alterar o campo "Status" no painel lateral direito</li>
+            </ol>
+          </div>
+        </details>
+
+        <details>
+          <summary>Posso recuperar uma tarefa arquivada?</summary>
+          <div class="details-body">
+            <p>Tarefas arquivadas são removidas das visualizações normais. Para recuperá-la, é necessário acesso direto ao banco de dados (via Supabase). Contate o Administrador do sistema.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Por que o botão "Exportar CSV" não aparece para mim?</summary>
+          <div class="details-body">
+            <p>A exportação de CSV está disponível apenas para usuários com perfil <span class="role role-lead">Lead</span> ou <span class="role role-admin">Admin</span>. Se precisar exportar dados, solicite a um Lead ou Admin.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Como recebo notificações de novas tarefas?</summary>
+          <div class="details-body">
+            <p>Você recebe notificações automaticamente quando alguém te adiciona como responsável principal ou responsável adicional em uma tarefa. As notificações aparecem no sino 🔔 no topo e como um toast momentâneo na tela.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Posso criar projetos sendo Membro?</summary>
+          <div class="details-body">
+            <p>Não. A criação e edição de projetos é restrita aos perfis <span class="role role-lead">Lead</span> e <span class="role role-admin">Admin</span>. Como Membro, você pode visualizar projetos e associar tarefas a projetos existentes.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>O que acontece quando desativo um usuário na allowlist?</summary>
+          <div class="details-body">
+            <p>O usuário perde o acesso no próximo login. As tarefas criadas por ele ou atribuídas a ele permanecem intactas no sistema. A desativação é reversível — basta reativar o toggle.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Por que uma categoria não aparece no formulário de tarefa?</summary>
+          <div class="details-body">
+            <p>Categorias desativadas não aparecem nos seletores de tarefa. Verifique em Configurações → Categorias se a categoria que você procura está com o toggle "Ativa" habilitado. Apenas Admins podem ativar/desativar categorias.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Como sei quais tarefas estão atrasadas?</summary>
+          <div class="details-body">
+            <ul class="bullet">
+              <li>No <strong>Dashboard</strong>: card "Atrasadas (minhas)" mostra suas tarefas vencidas</li>
+              <li>No <strong>Kanban</strong>: cards com prazo vencido têm a data em vermelho; tarefas bloqueadas têm borda vermelha</li>
+              <li>Na <strong>Lista de Tarefas</strong>: a coluna "Prazo" exibe datas vencidas em vermelho</li>
+              <li>No <strong>Detalhe do Projeto</strong>: o indicador "Atrasadas" mostra a contagem para o projeto específico</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- FOOTER -->
+      <div style="margin-top:56px;padding:24px;background:var(--bg-white);border:1px solid var(--border);border-radius:12px;text-align:center;">
+        <p style="font-size:13px;color:var(--text-muted);margin:0">
+          <strong>GTI — Gestão de Tarefas Inteligente</strong><br>
+          Manual do Usuário · Gogroup Transportes · Versão 1.0 · Maio 2026<br><br>
+          Para suporte técnico ou dúvidas não cobertas neste manual, contate o Administrador do sistema.
+        </p>
+      </div>
+
+    </div><!-- /.content -->
+  </div><!-- /.main -->
+</div><!-- /.layout -->
+
+<!-- SCRIPT: active link highlighting on scroll -->
+<script>
+  const links = document.querySelectorAll('.sidebar-link');
+  const sections = document.querySelectorAll('.section');
+
+  function highlightActive() {
+    let current = '';
+    sections.forEach(sec => {
+      const top = sec.getBoundingClientRect().top;
+      if (top <= 100) current = sec.id;
+    });
+    links.forEach(link => {
+      link.classList.remove('active');
+      const href = link.getAttribute('href');
+      if (href === '#' + current) link.classList.add('active');
+    });
+  }
+
+  document.querySelector('.main').addEventListener('scroll', highlightActive);
+  window.addEventListener('scroll', highlightActive);
+
+  // Smooth scroll for sidebar links
+  links.forEach(link => {
+    link.addEventListener('click', e => {
+      const href = link.getAttribute('href');
+      if (!href || !href.startsWith('#')) return;
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

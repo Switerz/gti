@@ -16,7 +16,7 @@ export function TaskDueDateBadge({ dueDate, isFinal = false, isArchived = false,
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+        'inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium',
         overdue
           ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
           : 'bg-muted text-muted-foreground',

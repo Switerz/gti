@@ -16,32 +16,36 @@ export function AuthProvider() {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       // Immediately seed the session cache so AuthGuard never waits for getSession() network calls.
       // INITIAL_SESSION fires synchronously from local storage — no network round-trip needed.
       queryClient.setQueryData(['auth', 'session'], session)
 
       if (event === 'SIGNED_IN' && session?.user) {
-        const user = session.user
-        const email = user.email ?? ''
+        window.setTimeout(() => {
+          void (async () => {
+            const user = session.user
+            const email = user.email ?? ''
 
-        const allowed = await authService.checkAllowlist(email)
+            const allowed = await authService.checkAllowlist(email)
 
-        if (!allowed || !allowed.active) {
-          await supabase.auth.signOut()
-          navigate('/unauthorized', { replace: true })
-          return
-        }
+            if (!allowed || !allowed.active) {
+              await supabase.auth.signOut()
+              navigate('/unauthorized', { replace: true })
+              return
+            }
 
-        await authService.upsertProfile({
-          id: user.id,
-          email,
-          full_name: user.user_metadata?.full_name ?? null,
-          avatar_url: user.user_metadata?.avatar_url ?? null,
-          role: allowed.role,
-        })
+            await authService.upsertProfile({
+              id: user.id,
+              email,
+              full_name: user.user_metadata?.full_name ?? null,
+              avatar_url: user.user_metadata?.avatar_url ?? null,
+              role: allowed.role,
+            })
 
-        queryClient.invalidateQueries({ queryKey: ['profiles', 'current'] })
+            queryClient.invalidateQueries({ queryKey: ['profiles', 'current'] })
+          })()
+        }, 0)
       }
 
       if (event === 'SIGNED_OUT') {

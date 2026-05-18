@@ -75,12 +75,13 @@ describe('TaskCard rendering', () => {
     expect(screen.getByText('1/2')).toBeInTheDocument()
   })
 
-  it('shows "Bloqueado" indicator when status slug is blocked', () => {
+  it('uses blocked styling without repeating the column status as text', () => {
     const task = makeTask({
       status: { id: 's-blocked', name: 'Bloqueado', slug: 'blocked', color: '#ef4444', is_final: false },
     })
     renderCard(task)
-    expect(screen.getByText('Bloqueado')).toBeInTheDocument()
+    expect(screen.queryByText('Bloqueado')).not.toBeInTheDocument()
+    expect(screen.getByRole('link')).toHaveClass('border-red-500/50')
   })
 
   it('does not show category badge when category is null', () => {
@@ -124,11 +125,11 @@ describe('TaskCard assignee avatars', () => {
     expect(screen.getByText('CS')).toBeInTheDocument()
   })
 
-  it('shows overflow count when more than 4 assignees', () => {
+  it('shows overflow count when more than 2 assignees', () => {
     const manyAssignees = Array.from({ length: 6 }, (_, i) => ({
       profile: { id: `u${i}`, full_name: `User ${i}`, avatar_url: null },
     }))
     renderCard(makeTask({ assignees: manyAssignees }))
-    expect(screen.getByText('+2')).toBeInTheDocument()
+    expect(screen.getByText('+4')).toBeInTheDocument()
   })
 })
