@@ -51,7 +51,13 @@ export function useTaskNotifications(currentProfileId?: string) {
           })()
         },
       )
-      .subscribe()
+      .subscribe((status, err) => {
+        if (status === 'CHANNEL_ERROR') {
+          console.error('[notifications] realtime channel error:', err)
+        } else if (status === 'TIMED_OUT') {
+          console.warn('[notifications] realtime channel timed out')
+        }
+      })
 
     return () => {
       supabase.removeChannel(channel)
