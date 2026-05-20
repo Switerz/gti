@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -25,7 +25,10 @@ jobs:
         run: npm run lint
 
       - name: Test
-        run: npm test -- --run
+        run: npm run test
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder
 
       - name: Build
         run: npm run build
