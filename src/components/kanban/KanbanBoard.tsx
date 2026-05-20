@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 import {
   DndContext,
@@ -85,8 +86,12 @@ export function KanbanBoard({ tasks, statuses, currentProfile, isLoading, onTask
   }
 
   function onDragEnd(event: DragEndEvent) {
-    setActiveTask(null)
+    // flushSync ensures the DragOverlay unmounts synchronously before the
+    // optimistic update in useMoveTask runs. Without this, React 18's
+    // concurrent renderer processes both updates at the same time and the
+    // reconciler fails with "removeChild: node is not a child of this node".
     const { active, over } = event
+    flushSync(() => setActiveTask(null))
     if (!over) return
 
     const move = resolveKanbanMove({

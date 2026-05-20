@@ -4,6 +4,7 @@ import { ArrowLeft, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { KanbanBoard } from '@/components/kanban/KanbanBoard'
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { ErrorState } from '@/components/shared/ErrorState'
 import { LoadingState } from '@/components/shared/LoadingState'
 import { TaskFormDrawer } from '@/components/tasks/TaskFormDrawer'
@@ -232,13 +233,15 @@ export function ProjectDetailPage() {
 
       {/* Kanban */}
       {currentProfile && (
-        <KanbanBoard
-          tasks={activeTasks}
-          statuses={statuses}
-          currentProfile={currentProfile}
-          isLoading={tasksLoading}
-          onTaskEdit={handleTaskEdit}
-        />
+        <ErrorBoundary>
+          <KanbanBoard
+            tasks={activeTasks}
+            statuses={statuses}
+            currentProfile={currentProfile}
+            isLoading={tasksLoading}
+            onTaskEdit={handleTaskEdit}
+          />
+        </ErrorBoundary>
       )}
 
       {currentProfile && (

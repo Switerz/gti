@@ -10,6 +10,7 @@ import {
 import { TaskFormDrawer } from '@/components/tasks/TaskFormDrawer'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { filterTasksForTeamBoard, hasActiveTeamFilters } from '@/features/tasks/team-board-filters'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
@@ -109,13 +110,15 @@ export function TeamBoardPage() {
             }
           />
         ) : (
-          <KanbanBoard
-            tasks={filteredTasks}
-            statuses={statuses}
-            currentProfile={currentProfile}
-            isLoading={isLoading}
-            onTaskEdit={handleTaskEdit}
-          />
+          <ErrorBoundary>
+            <KanbanBoard
+              tasks={filteredTasks}
+              statuses={statuses}
+              currentProfile={currentProfile}
+              isLoading={isLoading}
+              onTaskEdit={handleTaskEdit}
+            />
+          </ErrorBoundary>
         )
       )}
 

@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react'
 
 import { KanbanBoard } from '@/components/kanban/KanbanBoard'
 import { KanbanFilters } from '@/components/kanban/KanbanFilters'
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { TaskFormDrawer } from '@/components/tasks/TaskFormDrawer'
 import { Button } from '@/components/ui/button'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
@@ -63,13 +64,15 @@ export function MyBoardPage() {
       />
 
       {currentProfile && (
-        <KanbanBoard
-          tasks={filtered}
-          statuses={statuses}
-          currentProfile={currentProfile}
-          isLoading={isLoading}
-          onTaskEdit={handleTaskEdit}
-        />
+        <ErrorBoundary>
+          <KanbanBoard
+            tasks={filtered}
+            statuses={statuses}
+            currentProfile={currentProfile}
+            isLoading={isLoading}
+            onTaskEdit={handleTaskEdit}
+          />
+        </ErrorBoundary>
       )}
 
       {currentProfile && (
