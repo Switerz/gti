@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { FolderOpen, Plus } from 'lucide-react'
+import { FolderOpen, Plus, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { ErrorState } from '@/components/shared/ErrorState'
@@ -28,9 +28,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { useCategories } from '@/hooks/useCategories'
 import { useCreateProject } from '@/hooks/useCreateProject'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
+import { useDeleteProject } from '@/hooks/useDeleteProject'
 import { useProjects } from '@/hooks/useProjects'
 import { formatDateTime } from '@/lib/dates'
-import { canManageProjects } from '@/lib/permissions'
+import { canCreateProject, canDeleteProject } from '@/lib/permissions'
 import { fromOptionalSelectValue, SELECT_NONE_VALUE, toSelectValue } from '@/lib/select-values'
 import type { ProjectWithCategory } from '@/types/domain'
 
@@ -131,39 +132,89 @@ function ProjectCreateDialog({ open, onOpenChange, createdBy }: CreateDialogProp
   )
 }
 
+// ── Delete confirm dialog ─────────────────────────────────────────────────────
+
+interface DeleteDialogProps {
+  project: ProjectWithCategory | null
+  onConfirm: () => void
+  onCancel: () => void
+  isPending: boolean
+}
+
+function ProjectDeleteDialog({ project, onConfirm, onCancel, isPending }: DeleteDialogProps) {
+  return (
+    <Dialog open={!!project} onOpenChange={(v) => { if (!v) onCancel() }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Excluir projeto</DialogTitle>
+          <DialogDescription>
+            Tem certeza que deseja excluir <strong>{project?.name}</strong>? As tarefas associadas
+            não serão apagadas, mas o projeto deixará de aparecer nas listagens.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel} disabled={isPending}>
+            Cancelar
+          </Button>
+          <Button variant="destructive" onClick={onConfirm} disabled={isPending}>
+            {isPending ? 'Excluindo…' : 'Excluir'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // ── Project card ──────────────────────────────────────────────────────────────
 
-function ProjectCard({ project }: { project: ProjectWithCategory }) {
+interface ProjectCardProps {
+  project: ProjectWithCategory
+  onDelete?: () => void
+}
+
+function ProjectCard({ project, onDelete }: ProjectCardProps) {
   return (
-    <Link to={`/projects/${project.id}`} className="group block">
-      <Card className="flex h-full flex-col transition-shadow group-hover:shadow-md">
-        <CardHeader className="pb-2">
-          <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-base leading-snug group-hover:text-primary">{project.name}</CardTitle>
-            <FolderOpen className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-          </div>
-          {project.category && (
-            <span
-              className="inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium"
-              style={{
-                backgroundColor: `${project.category.color}22`,
-                color: project.category.color ?? undefined,
-              }}
-            >
-              {project.category.name}
-            </span>
-          )}
-        </CardHeader>
-        <CardContent className="flex flex-1 flex-col justify-between gap-3">
-          {project.description ? (
-            <p className="line-clamp-3 text-sm text-muted-foreground">{project.description}</p>
-          ) : (
-            <p className="text-sm italic text-muted-foreground">Sem descrição.</p>
-          )}
-          <p className="text-xs text-muted-foreground">Criado em {formatDateTime(project.created_at)}</p>
-        </CardContent>
-      </Card>
-    </Link>
+    <div className="group relative">
+      <Link to={`/projects/${project.id}`} className="block">
+        <Card className="flex h-full flex-col transition-shadow group-hover:shadow-md">
+          <CardHeader className="pb-2">
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="text-base leading-snug group-hover:text-primary">{project.name}</CardTitle>
+              <FolderOpen className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+            </div>
+            {project.category && (
+              <span
+                className="inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{
+                  backgroundColor: `${project.category.color}22`,
+                  color: project.category.color ?? undefined,
+                }}
+              >
+                {project.category.name}
+              </span>
+            )}
+          </CardHeader>
+          <CardContent className="flex flex-1 flex-col justify-between gap-3">
+            {project.description ? (
+              <p className="line-clamp-3 text-sm text-muted-foreground">{project.description}</p>
+            ) : (
+              <p className="text-sm italic text-muted-foreground">Sem descrição.</p>
+            )}
+            <p className="text-xs text-muted-foreground">Criado em {formatDateTime(project.created_at)}</p>
+          </CardContent>
+        </Card>
+      </Link>
+
+      {onDelete && (
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete() }}
+          aria-label={`Excluir projeto ${project.name}`}
+          className="invisible absolute right-2 top-2 rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive group-hover:visible"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -172,9 +223,18 @@ function ProjectCard({ project }: { project: ProjectWithCategory }) {
 export function ProjectsPage() {
   const { data: currentProfile } = useCurrentProfile()
   const { data: projects = [], isLoading, isError } = useProjects()
+  const deleteProject = useDeleteProject()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [deletingProject, setDeletingProject] = useState<ProjectWithCategory | null>(null)
 
-  const canCreate = canManageProjects(currentProfile)
+  const canCreate = canCreateProject(currentProfile)
+  const canDelete = canDeleteProject(currentProfile)
+
+  async function handleDeleteConfirm() {
+    if (!deletingProject) return
+    await deleteProject.mutateAsync(deletingProject.id)
+    setDeletingProject(null)
+  }
 
   return (
     <section className="space-y-6">
@@ -219,7 +279,11 @@ export function ProjectsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {projects.map((p) => (
-            <ProjectCard key={p.id} project={p} />
+            <ProjectCard
+              key={p.id}
+              project={p}
+              onDelete={canDelete ? () => setDeletingProject(p) : undefined}
+            />
           ))}
         </div>
       )}
@@ -231,6 +295,13 @@ export function ProjectsPage() {
           createdBy={currentProfile.id}
         />
       )}
+
+      <ProjectDeleteDialog
+        project={deletingProject}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeletingProject(null)}
+        isPending={deleteProject.isPending}
+      />
     </section>
   )
 }

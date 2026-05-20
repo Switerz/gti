@@ -16,7 +16,15 @@ export function canManageAllowlist(profile: Profile | null | undefined) {
   return isAdmin(profile)
 }
 
+export function canCreateProject(profile: Profile | null | undefined) {
+  return isActive(profile)
+}
+
 export function canManageProjects(profile: Profile | null | undefined) {
+  return isLeadOrAdmin(profile)
+}
+
+export function canDeleteProject(profile: Profile | null | undefined) {
   return isLeadOrAdmin(profile)
 }
 

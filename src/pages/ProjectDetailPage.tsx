@@ -1,33 +1,45 @@
 import { useState } from 'react'
 
-import { ArrowLeft, Pencil, Plus } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
+import { ArrowLeft, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { KanbanBoard } from '@/components/kanban/KanbanBoard'
 import { ErrorState } from '@/components/shared/ErrorState'
 import { LoadingState } from '@/components/shared/LoadingState'
 import { TaskFormDrawer } from '@/components/tasks/TaskFormDrawer'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
+import { useDeleteProject } from '@/hooks/useDeleteProject'
 import { useProject } from '@/hooks/useProject'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
 import { useTasks } from '@/hooks/useTasks'
 import { useUpdateProject } from '@/hooks/useUpdateProject'
 import { formatDateTime } from '@/lib/dates'
-import { canEditTask, canManageProjects } from '@/lib/permissions'
+import { canDeleteProject, canEditTask, canManageProjects } from '@/lib/permissions'
 import type { TaskWithRelations } from '@/types/domain'
 
 export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const { data: currentProfile } = useCurrentProfile()
   const { data: project, isLoading, isError } = useProject(id)
   const { data: statuses = [] } = useTaskStatuses()
   const { data: tasks = [], isLoading: tasksLoading } = useTasks({ projectId: id })
   const updateProject = useUpdateProject()
+  const deleteProject = useDeleteProject()
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<TaskWithRelations | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const [editingName, setEditingName] = useState(false)
   const [nameDraft, setNameDraft] = useState('')
@@ -35,6 +47,13 @@ export function ProjectDetailPage() {
   const [descDraft, setDescDraft] = useState('')
 
   const canManage = canManageProjects(currentProfile)
+  const canDelete = canDeleteProject(currentProfile)
+
+  async function handleDelete() {
+    if (!project) return
+    await deleteProject.mutateAsync(project.id)
+    navigate('/projects', { replace: true })
+  }
 
   function handleTaskEdit(task: TaskWithRelations) {
     if (!currentProfile || !canEditTask(currentProfile, task)) return
@@ -81,13 +100,26 @@ export function ProjectDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        to="/projects"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Projetos
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          to="/projects"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Projetos
+        </Link>
+        {canDelete && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setConfirmDelete(true)}
+            className="text-muted-foreground hover:text-destructive"
+          >
+            <Trash2 className="mr-1.5 h-4 w-4" />
+            Excluir projeto
+          </Button>
+        )}
+      </div>
 
       {/* Project header */}
       <div className="space-y-2">
@@ -226,6 +258,26 @@ export function ProjectDetailPage() {
           currentProfile={currentProfile}
         />
       )}
+
+      <Dialog open={confirmDelete} onOpenChange={(v) => { if (!v) setConfirmDelete(false) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir projeto</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir <strong>{project?.name}</strong>? As tarefas associadas
+              não serão apagadas, mas o projeto deixará de aparecer nas listagens.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDelete(false)} disabled={deleteProject.isPending}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleteProject.isPending}>
+              {deleteProject.isPending ? 'Excluindo…' : 'Excluir'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

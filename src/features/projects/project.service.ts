@@ -47,6 +47,14 @@ export const projectService = {
     return data as unknown as Project
   },
 
+  async archive(id: string): Promise<void> {
+    const { error } = await (supabase.from('projects') as any)
+      .update({ active: false })
+      .eq('id', id)
+
+    if (error) throw error
+  },
+
   async update(
     id: string,
     values: { name?: string; description?: string | null; categoryId?: string | null },
