@@ -108,6 +108,7 @@ describe('task payload helpers', () => {
       priority: 'medium',
       due_date: null,
       start_date: null,
+      recurrence_type: 'none',
     })
   })
 
