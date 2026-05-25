@@ -9,6 +9,7 @@ DECLARE
   v_user      uuid;
   -- statuses
   s_backlog   uuid; s_todo uuid; s_progress uuid;
+  s_backlog   uuid; s_todo uuid; s_progress uuid;
   s_blocked   uuid; s_review uuid; s_done uuid;
   -- categories
   c_prazo     uuid; c_coletado uuid; c_contestacao uuid;
