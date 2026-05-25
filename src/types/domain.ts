@@ -66,6 +66,15 @@ export type ProjectWithCategory = Project & {
   category: Pick<Category, 'id' | 'name' | 'color'> | null
 }
 
+// ─── OKR types ───────────────────────────────────────────────────────────────
+
+export type OkrObjective = Database['public']['Tables']['okr_objectives']['Row']
+export type OkrKeyResult = Database['public']['Tables']['okr_key_results']['Row']
+
+export type OkrObjectiveWithKRs = OkrObjective & {
+  key_results: OkrKeyResult[]
+}
+
 // ─── Navigation ──────────────────────────────────────────────────────────────
 
 export type NavigationItem = {

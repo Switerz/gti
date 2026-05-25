@@ -4,6 +4,7 @@ import { AuthGuard } from '@/components/auth/AuthGuard'
 import { AppShell } from '@/components/layout/AppShell'
 import { AuthProvider } from '@/features/auth/AuthProvider'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { OKRPage } from '@/pages/OKRPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { MyBoardPage } from '@/pages/MyBoardPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
@@ -44,6 +45,7 @@ export const router = createBrowserRouter([
               { path: 'tasks/:id', element: <TaskDetailPage /> },
               { path: 'projects', element: <ProjectsPage /> },
               { path: 'projects/:id', element: <ProjectDetailPage /> },
+              { path: 'okrs', element: <OKRPage /> },
               { path: 'settings', element: <SettingsPage /> },
             ],
           },

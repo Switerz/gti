@@ -308,6 +308,82 @@ export type Database = {
           created_at?: string
         }
       }
+      okr_objectives: {
+        Row: {
+          id: string
+          macro_title: string
+          description: string | null
+          semester: string
+          position: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          macro_title: string
+          description?: string | null
+          semester?: string
+          position?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          macro_title?: string
+          description?: string | null
+          semester?: string
+          position?: number
+          created_at?: string
+        }
+      }
+      okr_key_results: {
+        Row: {
+          id: string
+          objective_id: string
+          code: string
+          title: string
+          owner: string | null
+          updater: string | null
+          data_source: string | null
+          grade_min: number
+          grade_target: number
+          current_value: number
+          notes: string | null
+          position: number
+          updated_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          objective_id: string
+          code: string
+          title: string
+          owner?: string | null
+          updater?: string | null
+          data_source?: string | null
+          grade_min?: number
+          grade_target?: number
+          current_value?: number
+          notes?: string | null
+          position?: number
+          updated_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          objective_id?: string
+          code?: string
+          title?: string
+          owner?: string | null
+          updater?: string | null
+          data_source?: string | null
+          grade_min?: number
+          grade_target?: number
+          current_value?: number
+          notes?: string | null
+          position?: number
+          updated_at?: string
+          created_at?: string
+        }
+      }
     }
     Views: Record<string, never>
     Functions: {

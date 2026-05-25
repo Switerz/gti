@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   ListChecks,
   Settings,
+  Target,
   UsersRound,
 } from 'lucide-react'
 
@@ -15,5 +16,6 @@ export const mainNavigation: NavigationItem[] = [
   { title: 'Kanban da Equipe', shortTitle: 'Equipe', href: '/team-board', icon: UsersRound },
   { title: 'Lista de Tarefas', shortTitle: 'Tarefas', href: '/tasks', icon: ListChecks },
   { title: 'Projetos', href: '/projects', icon: FolderKanban },
+  { title: 'OKRs', href: '/okrs', icon: Target },
   { title: 'Configurações', href: '/settings', icon: Settings },
 ]
