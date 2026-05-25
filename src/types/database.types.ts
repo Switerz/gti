@@ -347,6 +347,7 @@ export type Database = {
           grade_target: number
           current_value: number
           notes: string | null
+          dynamic_milestones: boolean
           position: number
           updated_at: string
           created_at: string
@@ -363,6 +364,7 @@ export type Database = {
           grade_target?: number
           current_value?: number
           notes?: string | null
+          dynamic_milestones?: boolean
           position?: number
           updated_at?: string
           created_at?: string
@@ -379,6 +381,7 @@ export type Database = {
           grade_target?: number
           current_value?: number
           notes?: string | null
+          dynamic_milestones?: boolean
           position?: number
           updated_at?: string
           created_at?: string

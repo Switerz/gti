@@ -42,4 +42,30 @@ export const okrService = {
 
     if (error) throw error
   },
+
+  async addMilestone(params: {
+    kr_id: string
+    label: string
+    current_value: number
+    position: number
+  }): Promise<void> {
+    const { error } = await (supabase.from('okr_milestones') as any)
+      .insert({
+        kr_id: params.kr_id,
+        label: params.label,
+        current_value: params.current_value,
+        target_value: params.current_value,
+        position: params.position,
+      })
+
+    if (error) throw error
+  },
+
+  async deleteMilestone(id: string): Promise<void> {
+    const { error } = await (supabase.from('okr_milestones') as any)
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+  },
 }

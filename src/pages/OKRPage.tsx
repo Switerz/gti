@@ -1,20 +1,25 @@
 import { useState } from 'react'
 
-import { Check, ChevronDown, ChevronRight, ChevronUp, Info, Pencil, X } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, ChevronUp, Info, Pencil, Plus, Trash2, X } from 'lucide-react'
 
 import { LoadingState } from '@/components/shared/LoadingState'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
-import { useOkrs, useUpdateKeyResult, useUpdateMilestone } from '@/hooks/useOkrs'
+import { useAddMilestone, useDeleteMilestone, useOkrs, useUpdateKeyResult, useUpdateMilestone } from '@/hooks/useOkrs'
 import { canManageProjects } from '@/lib/permissions'
 import type { OkrKeyResultWithMilestones, OkrMilestone, OkrObjectiveWithKRs } from '@/types/domain'
 
 import { PageHeader } from './PageHeader'
 
-// ── Score helpers ─────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function calcKRProgress(kr: OkrKeyResultWithMilestones): number {
+  if (kr.dynamic_milestones) {
+    if (kr.grade_target === 0) return 0
+    const total = kr.milestones.reduce((s, m) => s + m.current_value, 0)
+    return Math.min(total / kr.grade_target, 1)
+  }
   if (kr.milestones.length > 0) {
     const totalTarget = kr.milestones.reduce((s, m) => s + m.target_value, 0)
     if (totalTarget === 0) return 0
@@ -28,10 +33,7 @@ function calcKRProgress(kr: OkrKeyResultWithMilestones): number {
 function calcObjectiveProgress(obj: OkrObjectiveWithKRs): number {
   const totalTarget = obj.key_results.reduce((s, kr) => s + kr.grade_target, 0)
   if (totalTarget === 0) return 0
-  const totalDone = obj.key_results.reduce((s, kr) => {
-    const p = calcKRProgress(kr)
-    return s + p * kr.grade_target
-  }, 0)
+  const totalDone = obj.key_results.reduce((s, kr) => calcKRProgress(kr) * kr.grade_target + s, 0)
   return Math.min(totalDone / totalTarget, 1)
 }
 
@@ -40,53 +42,200 @@ function progressBarColor(p: number) {
   if (p >= 0.3) return 'bg-amber-400'
   return 'bg-red-500'
 }
-
 function progressTextColor(p: number) {
   if (p >= 0.7) return 'text-green-600 dark:text-green-400'
   if (p >= 0.3) return 'text-amber-600 dark:text-amber-400'
   return 'text-red-600 dark:text-red-400'
 }
-
 function progressLabel(p: number) {
   if (p >= 1.0) return 'Concluído'
   if (p >= 0.7) return 'No prazo'
   if (p >= 0.3) return 'Em risco'
   return 'Atrasado'
 }
-
 function isBinary(kr: OkrKeyResultWithMilestones) {
-  return kr.milestones.length === 0 && kr.grade_target === 1
+  return !kr.dynamic_milestones && kr.milestones.length === 0 && kr.grade_target === 1
+}
+function formatBRL(v: number) {
+  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
 }
 
-// ── Milestone row ─────────────────────────────────────────────────────────────
+// ── Dynamic milestone section (projetos com savings) ─────────────────────────
 
-function MilestoneRow({
-  milestone,
-  canEdit,
-}: {
-  milestone: OkrMilestone
-  canEdit: boolean
-}) {
+function DynamicMilestoneSection({ kr, canEdit }: { kr: OkrKeyResultWithMilestones; canEdit: boolean }) {
+  const addMilestone = useAddMilestone()
+  const deleteMilestone = useDeleteMilestone()
+  const updateMilestone = useUpdateMilestone()
+
+  const [showForm, setShowForm] = useState(false)
+  const [labelDraft, setLabelDraft] = useState('')
+  const [valueDraft, setValueDraft] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState('')
+
+  const totalSavings = kr.milestones.reduce((s, m) => s + m.current_value, 0)
+
+  async function handleAdd() {
+    const v = Number(valueDraft)
+    if (!labelDraft.trim() || isNaN(v) || v < 0) return
+    await addMilestone.mutateAsync({
+      kr_id: kr.id,
+      label: labelDraft.trim(),
+      current_value: v,
+      position: kr.milestones.length + 1,
+    })
+    setLabelDraft('')
+    setValueDraft('')
+    setShowForm(false)
+  }
+
+  async function handleSaveEdit(m: OkrMilestone) {
+    const v = Number(editValue)
+    if (isNaN(v) || v < 0) return
+    await updateMilestone.mutateAsync({ id: m.id, current_value: v })
+    setEditingId(null)
+  }
+
+  return (
+    <div className="border-t bg-muted/10">
+      {/* Savings summary bar */}
+      <div className="flex items-center gap-3 border-b px-4 py-2">
+        <div className="flex-1">
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className={`h-full rounded-full transition-all ${progressBarColor(calcKRProgress(kr))}`}
+              style={{ width: `${Math.min(Math.round((totalSavings / kr.grade_target) * 100), 100)}%` }}
+            />
+          </div>
+        </div>
+        <span className={`shrink-0 text-xs font-semibold tabular-nums ${progressTextColor(calcKRProgress(kr))}`}>
+          {formatBRL(totalSavings)} / {formatBRL(kr.grade_target)}
+        </span>
+      </div>
+
+      {/* Project list */}
+      {kr.milestones.map((m) => (
+        <div key={m.id} className="flex items-center gap-3 border-b px-4 py-2.5 last:border-0 hover:bg-muted/20">
+          <span className="flex-1 text-sm">{m.label}</span>
+          {editingId === m.id ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                className="h-7 w-32 rounded border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveEdit(m)
+                  if (e.key === 'Escape') setEditingId(null)
+                }}
+              />
+              <Button size="sm" className="h-7 px-2 text-xs" onClick={() => handleSaveEdit(m)} disabled={updateMilestone.isPending}>
+                Salvar
+              </Button>
+              <button onClick={() => setEditingId(null)} className="text-muted-foreground hover:text-foreground">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold tabular-nums text-green-600 dark:text-green-400">
+                {formatBRL(m.current_value)}
+              </span>
+              {canEdit && (
+                <>
+                  <button
+                    onClick={() => { setEditingId(m.id); setEditValue(String(m.current_value)) }}
+                    className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </button>
+                  <button
+                    onClick={() => deleteMilestone.mutate(m.id)}
+                    disabled={deleteMilestone.isPending}
+                    className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* Add project form */}
+      {canEdit && (
+        <div className="px-4 py-3">
+          {showForm ? (
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="min-w-[200px] flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground">Nome do projeto / automação</label>
+                <input
+                  type="text"
+                  value={labelDraft}
+                  onChange={(e) => setLabelDraft(e.target.value)}
+                  placeholder="Ex: Conciliação de reenvios"
+                  className="h-8 w-full rounded-md border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAdd() }}
+                />
+              </div>
+              <div className="w-36 space-y-1">
+                <label className="text-xs text-muted-foreground">Ganho em R$</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={valueDraft}
+                  onChange={(e) => setValueDraft(e.target.value)}
+                  placeholder="0"
+                  className="h-8 w-full rounded-md border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAdd() }}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={handleAdd} disabled={addMilestone.isPending || !labelDraft.trim()}>
+                  Adicionar
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => { setShowForm(false); setLabelDraft(''); setValueDraft('') }}>
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowForm(true)}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Adicionar projeto
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Static milestone row (checkboxes) ─────────────────────────────────────────
+
+function MilestoneRow({ milestone, canEdit }: { milestone: OkrMilestone; canEdit: boolean }) {
   const updateMilestone = useUpdateMilestone()
   const done = milestone.current_value >= milestone.target_value
 
   async function toggle() {
-    await updateMilestone.mutateAsync({
-      id: milestone.id,
-      current_value: done ? 0 : milestone.target_value,
-    })
+    await updateMilestone.mutateAsync({ id: milestone.id, current_value: done ? 0 : milestone.target_value })
   }
 
   return (
-    <div className="flex items-center gap-2.5 px-4 py-2 hover:bg-muted/30">
+    <div className="flex items-center gap-2.5 border-b px-4 py-2 last:border-0 hover:bg-muted/30">
       {canEdit ? (
         <button
           onClick={toggle}
           disabled={updateMilestone.isPending}
           className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
-            done
-              ? 'border-green-500 bg-green-500 text-white'
-              : 'border-muted-foreground/40 hover:border-green-400'
+            done ? 'border-green-500 bg-green-500 text-white' : 'border-muted-foreground/40 hover:border-green-400'
           }`}
         >
           {done && <Check className="h-3 w-3" />}
@@ -98,13 +247,9 @@ function MilestoneRow({
           {done && <Check className="h-3 w-3" />}
         </div>
       )}
-      <span className={`text-sm ${done ? 'text-muted-foreground line-through' : ''}`}>
-        {milestone.label}
-      </span>
+      <span className={`text-sm ${done ? 'text-muted-foreground line-through' : ''}`}>{milestone.label}</span>
       {milestone.target_value !== 1 && (
-        <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-          peso {milestone.target_value}
-        </span>
+        <span className="ml-auto shrink-0 text-xs text-muted-foreground">peso {milestone.target_value}</span>
       )}
     </div>
   )
@@ -121,14 +266,9 @@ function KRRow({ kr, canEdit }: { kr: OkrKeyResultWithMilestones; canEdit: boole
   const [milestonesOpen, setMilestonesOpen] = useState(false)
 
   const progress = calcKRProgress(kr)
-  const hasMilestones = kr.milestones.length > 0
+  const hasMilestones = kr.milestones.length > 0 || kr.dynamic_milestones
   const doneMilestones = kr.milestones.filter((m) => m.current_value >= m.target_value).length
-
-  function startEdit() {
-    setValueDraft(kr.current_value)
-    setNotesDraft(kr.notes ?? '')
-    setEditing(true)
-  }
+  const totalSavings = kr.milestones.reduce((s, m) => s + m.current_value, 0)
 
   async function saveEdit() {
     await updateKR.mutateAsync({ id: kr.id, values: { current_value: valueDraft, notes: notesDraft.trim() || null } })
@@ -141,7 +281,6 @@ function KRRow({ kr, canEdit }: { kr: OkrKeyResultWithMilestones; canEdit: boole
 
   return (
     <div className="border-b last:border-0">
-      {/* Main row */}
       <div className="flex items-start gap-3 px-4 py-3">
         <span className="mt-0.5 shrink-0 rounded bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
           {kr.code}
@@ -150,17 +289,12 @@ function KRRow({ kr, canEdit }: { kr: OkrKeyResultWithMilestones; canEdit: boole
         <div className="min-w-0 flex-1 space-y-1">
           <p className="text-sm leading-snug">{kr.title}</p>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            {kr.owner && (
-              <span>Dono: <span className="font-medium text-foreground">{kr.owner}</span></span>
-            )}
+            {kr.owner && <span>Dono: <span className="font-medium text-foreground">{kr.owner}</span></span>}
             {kr.updater && kr.updater !== kr.owner && (
               <span>Atualiza: <span className="font-medium text-foreground">{kr.updater}</span></span>
             )}
             {kr.data_source && (
-              <button
-                onClick={() => setShowSource((v) => !v)}
-                className="inline-flex items-center gap-0.5 hover:text-foreground"
-              >
+              <button onClick={() => setShowSource((v) => !v)} className="inline-flex items-center gap-0.5 hover:text-foreground">
                 <Info className="h-3 w-3" />Fonte
               </button>
             )}
@@ -173,20 +307,28 @@ function KRRow({ kr, canEdit }: { kr: OkrKeyResultWithMilestones; canEdit: boole
           )}
         </div>
 
-        {/* Right side: progress + actions */}
+        {/* Right: progress + actions */}
         <div className="flex shrink-0 items-center gap-2">
-          {hasMilestones ? (
-            /* KRs com milestones: barra + contador + toggle */
+          {kr.dynamic_milestones ? (
+            <button
+              onClick={() => setMilestonesOpen((v) => !v)}
+              className="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted"
+            >
+              <span className={`text-xs font-semibold tabular-nums ${progressTextColor(progress)}`}>
+                {formatBRL(totalSavings)}
+              </span>
+              {milestonesOpen
+                ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+            </button>
+          ) : hasMilestones ? (
             <button
               onClick={() => setMilestonesOpen((v) => !v)}
               className="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted"
             >
               <div className="hidden sm:block">
                 <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className={`h-full rounded-full transition-all ${progressBarColor(progress)}`}
-                    style={{ width: `${Math.round(progress * 100)}%` }}
-                  />
+                  <div className={`h-full rounded-full transition-all ${progressBarColor(progress)}`} style={{ width: `${Math.round(progress * 100)}%` }} />
                 </div>
               </div>
               <span className={`text-xs font-semibold tabular-nums ${progressTextColor(progress)}`}>
@@ -197,15 +339,12 @@ function KRRow({ kr, canEdit }: { kr: OkrKeyResultWithMilestones; canEdit: boole
                 : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
             </button>
           ) : isBinary(kr) ? (
-            /* KRs binários: toggle */
             canEdit ? (
               <button
                 onClick={toggleBinary}
                 disabled={updateKR.isPending}
                 className={`flex h-7 w-7 items-center justify-center rounded-full border-2 transition-colors ${
-                  kr.current_value >= 1
-                    ? 'border-green-500 bg-green-500 text-white'
-                    : 'border-muted-foreground/30 hover:border-green-400'
+                  kr.current_value >= 1 ? 'border-green-500 bg-green-500 text-white' : 'border-muted-foreground/30 hover:border-green-400'
                 }`}
               >
                 <Check className="h-3.5 w-3.5" />
@@ -218,14 +357,10 @@ function KRRow({ kr, canEdit }: { kr: OkrKeyResultWithMilestones; canEdit: boole
               </div>
             )
           ) : (
-            /* KRs numéricos: barra + valor */
             <div className="flex items-center gap-2">
               <div className="hidden sm:block">
                 <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className={`h-full rounded-full transition-all ${progressBarColor(progress)}`}
-                    style={{ width: `${Math.round(progress * 100)}%` }}
-                  />
+                  <div className={`h-full rounded-full transition-all ${progressBarColor(progress)}`} style={{ width: `${Math.round(progress * 100)}%` }} />
                 </div>
               </div>
               <span className={`text-xs font-semibold tabular-nums ${progressTextColor(progress)}`}>
@@ -237,12 +372,9 @@ function KRRow({ kr, canEdit }: { kr: OkrKeyResultWithMilestones; canEdit: boole
             </div>
           )}
 
-          {/* Edit button para KRs numéricos sem milestones */}
           {canEdit && !hasMilestones && !isBinary(kr) && !editing && (
-            <button
-              onClick={startEdit}
-              className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
+            <button onClick={() => { setValueDraft(kr.current_value); setNotesDraft(kr.notes ?? ''); setEditing(true) }}
+              className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
               <Pencil className="h-3.5 w-3.5" />
             </button>
           )}
@@ -254,34 +386,20 @@ function KRRow({ kr, canEdit }: { kr: OkrKeyResultWithMilestones; canEdit: boole
         </div>
       </div>
 
-      {/* Edit panel (KRs numéricos) */}
+      {/* Numeric edit panel */}
       {editing && (
         <div className="border-t bg-muted/20 px-4 py-3 space-y-3">
           <div className="flex flex-wrap items-end gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">
-                Valor atual <span className="text-muted-foreground">(meta: {kr.grade_target})</span>
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={kr.grade_target}
-                step={kr.grade_target <= 1 ? 0.1 : 1}
-                value={valueDraft}
-                onChange={(e) => setValueDraft(Number(e.target.value))}
-                className="h-8 w-28 rounded-md border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                autoFocus
-              />
+              <label className="text-xs font-medium text-muted-foreground">Valor atual (meta: {kr.grade_target})</label>
+              <input type="number" min={0} max={kr.grade_target} step={kr.grade_target <= 1 ? 0.1 : 1}
+                value={valueDraft} onChange={(e) => setValueDraft(Number(e.target.value))}
+                className="h-8 w-28 rounded-md border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring" autoFocus />
             </div>
             <div className="min-w-[180px] flex-1 space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Observação</label>
-              <Textarea
-                rows={2}
-                value={notesDraft}
-                onChange={(e) => setNotesDraft(e.target.value)}
-                placeholder="Contexto ou justificativa..."
-                className="text-sm"
-              />
+              <Textarea rows={2} value={notesDraft} onChange={(e) => setNotesDraft(e.target.value)}
+                placeholder="Contexto ou justificativa..." className="text-sm" />
             </div>
             <div className="flex gap-2">
               <Button size="sm" onClick={saveEdit} disabled={updateKR.isPending}>Salvar</Button>
@@ -291,13 +409,13 @@ function KRRow({ kr, canEdit }: { kr: OkrKeyResultWithMilestones; canEdit: boole
         </div>
       )}
 
-      {/* Milestones expandidos */}
+      {/* Milestones panel */}
       {hasMilestones && milestonesOpen && (
-        <div className="border-t bg-muted/10">
-          {kr.milestones.map((m) => (
-            <MilestoneRow key={m.id} milestone={m} canEdit={canEdit} />
-          ))}
-        </div>
+        kr.dynamic_milestones
+          ? <DynamicMilestoneSection kr={kr} canEdit={canEdit} />
+          : <div className="border-t bg-muted/10">
+              {kr.milestones.map((m) => <MilestoneRow key={m.id} milestone={m} canEdit={canEdit} />)}
+            </div>
       )}
     </div>
   )
@@ -320,10 +438,7 @@ function ObjectiveCard({ objective, canEdit, index }: { objective: OkrObjectiveW
 
   return (
     <div className={`overflow-hidden rounded-xl border bg-gradient-to-br ${CARD_COLORS[index % CARD_COLORS.length]}`}>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-start gap-3 px-5 py-4 text-left"
-      >
+      <button onClick={() => setOpen((v) => !v)} className="flex w-full items-start gap-3 px-5 py-4 text-left">
         <div className="flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-background/60 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
@@ -334,34 +449,25 @@ function ObjectiveCard({ objective, canEdit, index }: { objective: OkrObjectiveW
             </span>
           </div>
           <h3 className="font-semibold leading-snug">{objective.macro_title}</h3>
-          {objective.description && (
-            <p className="text-sm text-muted-foreground">{objective.description}</p>
-          )}
+          {objective.description && <p className="text-sm text-muted-foreground">{objective.description}</p>}
         </div>
-
         <div className="flex shrink-0 items-center gap-3 pt-1">
           <div className="relative h-10 w-10">
             <svg className="h-10 w-10 -rotate-90" viewBox="0 0 36 36">
               <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeWidth="3" className="text-muted/30" />
-              <circle
-                cx="18" cy="18" r="15" fill="none" strokeWidth="3"
-                strokeDasharray={`${pct * 0.942} 94.2`}
-                strokeLinecap="round"
+              <circle cx="18" cy="18" r="15" fill="none" strokeWidth="3"
+                strokeDasharray={`${pct * 0.942} 94.2`} strokeLinecap="round"
                 className={progress >= 0.7 ? 'text-green-500' : progress >= 0.3 ? 'text-amber-400' : 'text-red-500'}
-                stroke="currentColor"
-              />
+                stroke="currentColor" />
             </svg>
             <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold">{pct}%</span>
           </div>
           {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
         </div>
       </button>
-
       {open && (
         <div className="border-t bg-background/60">
-          {objective.key_results.map((kr) => (
-            <KRRow key={kr.id} kr={kr} canEdit={canEdit} />
-          ))}
+          {objective.key_results.map((kr) => <KRRow key={kr.id} kr={kr} canEdit={canEdit} />)}
         </div>
       )}
     </div>
@@ -376,8 +482,7 @@ export function OKRPage() {
   const canEdit = canManageProjects(currentProfile)
 
   const totalTarget = objectives.reduce((s, obj) => s + obj.key_results.reduce((ss, kr) => ss + kr.grade_target, 0), 0)
-  const totalDone = objectives.reduce((s, obj) =>
-    s + obj.key_results.reduce((ss, kr) => ss + calcKRProgress(kr) * kr.grade_target, 0), 0)
+  const totalDone = objectives.reduce((s, obj) => s + obj.key_results.reduce((ss, kr) => ss + calcKRProgress(kr) * kr.grade_target, 0), 0)
   const overallPct = totalTarget === 0 ? 0 : Math.round((totalDone / totalTarget) * 100)
 
   if (isLoading) return <LoadingState fullPage />
@@ -396,27 +501,21 @@ export function OKRPage() {
             <div className="relative h-12 w-12">
               <svg className="h-12 w-12 -rotate-90" viewBox="0 0 36 36">
                 <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeWidth="3" className="text-muted/30" />
-                <circle
-                  cx="18" cy="18" r="15" fill="none" strokeWidth="3"
-                  strokeDasharray={`${overallPct * 0.942} 94.2`}
-                  strokeLinecap="round"
+                <circle cx="18" cy="18" r="15" fill="none" strokeWidth="3"
+                  strokeDasharray={`${overallPct * 0.942} 94.2`} strokeLinecap="round"
                   className={overallPct >= 70 ? 'text-green-500' : overallPct >= 30 ? 'text-amber-400' : 'text-red-500'}
-                  stroke="currentColor"
-                />
+                  stroke="currentColor" />
               </svg>
               <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold">{overallPct}%</span>
             </div>
           </div>
         }
       />
-
       {objectives.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">Nenhum OKR cadastrado.</p>
       ) : (
         <div className="space-y-4">
-          {objectives.map((obj, i) => (
-            <ObjectiveCard key={obj.id} objective={obj} canEdit={canEdit} index={i} />
-          ))}
+          {objectives.map((obj, i) => <ObjectiveCard key={obj.id} objective={obj} canEdit={canEdit} index={i} />)}
         </div>
       )}
     </section>
