@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from '@/lib/supabase'
 import type { OkrObjectiveWithKRs } from '@/types/domain'
 
@@ -21,8 +22,7 @@ export const okrService = {
     id: string,
     values: { current_value?: number; notes?: string | null },
   ): Promise<void> {
-    const { error } = await supabase
-      .from('okr_key_results')
+    const { error } = await (supabase.from('okr_key_results') as any)
       .update({ ...values, updated_at: new Date().toISOString() })
       .eq('id', id)
 
