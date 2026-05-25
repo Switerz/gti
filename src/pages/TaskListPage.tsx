@@ -329,7 +329,7 @@ function TaskRow({ task, onEdit }: TaskRowProps) {
       <td className="px-4 py-3">
         {task.category ? (
           <span
-            className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+            className="inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium"
             style={{
               backgroundColor: `${task.category.color}22`,
               color: task.category.color ?? undefined,
