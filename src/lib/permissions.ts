@@ -55,5 +55,5 @@ export function canArchiveTask(profile: Profile | null | undefined, task: TaskWi
 }
 
 export function canManageCategories(profile: Profile | null | undefined) {
-  return isAdmin(profile)
+  return isLeadOrAdmin(profile)
 }
