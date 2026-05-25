@@ -6,7 +6,7 @@ export const okrService = {
   async getAll(): Promise<OkrObjectiveWithKRs[]> {
     const { data, error } = await supabase
       .from('okr_objectives')
-      .select('*, key_results:okr_key_results(*)')
+      .select('*, key_results:okr_key_results(*, milestones:okr_milestones(*))')
       .order('position', { ascending: true })
 
     if (error) throw error
@@ -14,6 +14,9 @@ export const okrService = {
     const sorted = (data ?? []) as unknown as OkrObjectiveWithKRs[]
     sorted.forEach((obj) => {
       obj.key_results.sort((a, b) => a.position - b.position)
+      obj.key_results.forEach((kr) => {
+        kr.milestones.sort((a, b) => a.position - b.position)
+      })
     })
     return sorted
   },
@@ -23,6 +26,17 @@ export const okrService = {
     values: { current_value?: number; notes?: string | null },
   ): Promise<void> {
     const { error } = await (supabase.from('okr_key_results') as any)
+      .update({ ...values, updated_at: new Date().toISOString() })
+      .eq('id', id)
+
+    if (error) throw error
+  },
+
+  async updateMilestone(
+    id: string,
+    values: { current_value: number },
+  ): Promise<void> {
+    const { error } = await (supabase.from('okr_milestones') as any)
       .update({ ...values, updated_at: new Date().toISOString() })
       .eq('id', id)
 

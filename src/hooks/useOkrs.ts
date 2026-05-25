@@ -29,3 +29,16 @@ export function useUpdateKeyResult() {
     onError: () => toast.error('Erro ao atualizar KR.'),
   })
 }
+
+export function useUpdateMilestone() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, current_value }: { id: string; current_value: number }) =>
+      okrService.updateMilestone(id, { current_value }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['okrs'] })
+    },
+    onError: () => toast.error('Erro ao atualizar marco.'),
+  })
+}

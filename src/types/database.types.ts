@@ -384,6 +384,38 @@ export type Database = {
           created_at?: string
         }
       }
+      okr_milestones: {
+        Row: {
+          id: string
+          kr_id: string
+          label: string
+          target_value: number
+          current_value: number
+          position: number
+          updated_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          kr_id: string
+          label: string
+          target_value?: number
+          current_value?: number
+          position?: number
+          updated_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          kr_id?: string
+          label?: string
+          target_value?: number
+          current_value?: number
+          position?: number
+          updated_at?: string
+          created_at?: string
+        }
+      }
     }
     Views: Record<string, never>
     Functions: {

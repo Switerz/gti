@@ -70,9 +70,14 @@ export type ProjectWithCategory = Project & {
 
 export type OkrObjective = Database['public']['Tables']['okr_objectives']['Row']
 export type OkrKeyResult = Database['public']['Tables']['okr_key_results']['Row']
+export type OkrMilestone = Database['public']['Tables']['okr_milestones']['Row']
+
+export type OkrKeyResultWithMilestones = OkrKeyResult & {
+  milestones: OkrMilestone[]
+}
 
 export type OkrObjectiveWithKRs = OkrObjective & {
-  key_results: OkrKeyResult[]
+  key_results: OkrKeyResultWithMilestones[]
 }
 
 // ─── Navigation ──────────────────────────────────────────────────────────────
