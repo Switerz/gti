@@ -138,7 +138,7 @@ export const taskService = {
     id: string,
     values: Partial<TaskFormValues>,
     actorId: string,
-  ): Promise<TaskWithRelations> {
+  ): Promise<{ task: TaskWithRelations; recurringCreated: boolean }> {
     let statusRow: { id: string; is_final: boolean } | null = null
     if (values.statusId !== undefined) {
       const { data } = await db.task_statuses()
@@ -208,14 +208,15 @@ export const taskService = {
     const full = await taskService.getById(id)
     if (!full) throw new Error('Task not found after update')
 
+    let recurringCreated = false
     if (statusRow?.is_final && full.recurrence_type !== 'none') {
-      await taskService.createRecurring(full, actorId)
+      recurringCreated = await taskService.createRecurring(full, actorId)
     }
 
-    return full
+    return { task: full, recurringCreated }
   },
 
-  async createRecurring(source: TaskWithRelations, actorId: string): Promise<void> {
+  async createRecurring(source: TaskWithRelations, actorId: string): Promise<boolean> {
     const recurrenceType = source.recurrence_type as RecurrenceType
 
     const { data: backlogStatus } = await db.task_statuses()
@@ -231,9 +232,12 @@ export const taskService = {
       ? getNextDueDate(recurrenceType, new Date(source.due_date))
       : getNextDueDate(recurrenceType)
 
+    // Use the next cycle's date for the title suffix, not today
+    const nextDueDateObj = nextDueDate ? new Date(nextDueDate) : new Date()
+
     const { data: newTask, error } = await db.tasks()
       .insert({
-        title: buildRecurringTitle(source.title, recurrenceType),
+        title: buildRecurringTitle(source.title, recurrenceType, nextDueDateObj),
         description: source.description,
         status_id: nextStatusId,
         category_id: source.category_id,
@@ -244,6 +248,8 @@ export const taskService = {
         due_date: nextDueDate || null,
         start_date: null,
         recurrence_type: recurrenceType,
+        estimated_hours: source.estimated_hours,
+        actual_hours: null,
       })
       .select('id')
       .single()
@@ -270,10 +276,17 @@ export const taskService = {
       await db.task_checklist_items().insert(checklistRows)
     }
 
-    await taskService.logActivity(newTask.id, actorId, 'task_created')
+    // Non-fatal: log failure should not roll back the already-created task
+    try {
+      await taskService.logActivity(newTask.id, actorId, 'task_created')
+    } catch {
+      console.warn('[createRecurring] logActivity failed but task was created:', newTask.id)
+    }
+
+    return true
   },
 
-  async moveStatus(id: string, statusId: string, position: number, actorId: string): Promise<void> {
+  async moveStatus(id: string, statusId: string, position: number, actorId: string): Promise<boolean> {
     const updatePayload: Record<string, unknown> = { status_id: statusId, position }
     const { data: statusRow } = await db.task_statuses()
       .select('is_final')
@@ -289,9 +302,11 @@ export const taskService = {
     if (statusRow?.is_final) {
       const full = await taskService.getById(id)
       if (full && full.recurrence_type !== 'none') {
-        await taskService.createRecurring(full, actorId)
+        return taskService.createRecurring(full, actorId)
       }
     }
+
+    return false
   },
 
   async archive(id: string, actorId: string): Promise<void> {

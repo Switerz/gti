@@ -27,8 +27,8 @@ export function generateRecurrenceSuffix(type: RecurrenceType, date = new Date()
   return ''
 }
 
-export function buildRecurringTitle(title: string, type: RecurrenceType): string {
-  return stripRecurrenceSuffix(title) + generateRecurrenceSuffix(type)
+export function buildRecurringTitle(title: string, type: RecurrenceType, date = new Date()): string {
+  return stripRecurrenceSuffix(title) + generateRecurrenceSuffix(type, date)
 }
 
 export function getNextDueDate(type: RecurrenceType, from = new Date()): string {

@@ -10,10 +10,14 @@ export function useUpdateTask(actorId: string) {
   return useMutation({
     mutationFn: ({ id, values }: { id: string; values: Partial<TaskFormValues> }) =>
       taskService.update(id, values, actorId),
-    onSuccess: (updated) => {
+    onSuccess: ({ task: updated, recurringCreated }) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       queryClient.setQueryData(['tasks', updated.id], updated)
-      toast.success('Tarefa atualizada.')
+      if (recurringCreated) {
+        toast.success('Tarefa concluída. Nova recorrência criada automaticamente.')
+      } else {
+        toast.success('Tarefa atualizada.')
+      }
     },
     onError: () => {
       toast.error('Erro ao atualizar tarefa.')

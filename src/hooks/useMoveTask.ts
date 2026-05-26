@@ -37,8 +37,11 @@ export function useMoveTask(actorId: string) {
 
       return { previousTaskQueries }
     },
-    onSuccess: () => {
+    onSuccess: (recurringCreated) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      if (recurringCreated) {
+        toast.success('Tarefa concluída. Nova recorrência criada automaticamente.')
+      }
     },
     onError: (_error, _move, context) => {
       context?.previousTaskQueries.forEach(([queryKey, value]) => {
