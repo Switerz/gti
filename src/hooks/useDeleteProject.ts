@@ -12,6 +12,9 @@ export function useDeleteProject() {
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       toast.success('Projeto excluído.')
     },
-    onError: () => toast.error('Erro ao excluir projeto.'),
+    onError: (err) => {
+      console.error('[useDeleteProject] erro:', err)
+      toast.error('Erro ao excluir projeto.')
+    },
   })
 }
