@@ -165,6 +165,8 @@ export type Database = {
           position: number
           is_archived: boolean
           recurrence_type: 'none' | 'weekly' | 'monthly'
+          estimated_hours: number | null
+          actual_hours: number | null
           created_at: string
           updated_at: string
         }
@@ -184,6 +186,8 @@ export type Database = {
           position?: number
           is_archived?: boolean
           recurrence_type?: 'none' | 'weekly' | 'monthly'
+          estimated_hours?: number | null
+          actual_hours?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -203,6 +207,8 @@ export type Database = {
           position?: number
           is_archived?: boolean
           recurrence_type?: 'none' | 'weekly' | 'monthly'
+          estimated_hours?: number | null
+          actual_hours?: number | null
           created_at?: string
           updated_at?: string
         }

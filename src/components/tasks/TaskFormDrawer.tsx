@@ -306,6 +306,32 @@ export function TaskFormDrawer({
               </div>
             </div>
 
+            {/* Hours */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="task-estimatedHours">Horas estimadas</Label>
+                <Input
+                  id="task-estimatedHours"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  placeholder="ex: 4"
+                  {...form.register('estimatedHours')}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="task-actualHours">Horas reais</Label>
+                <Input
+                  id="task-actualHours"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  placeholder="ex: 3.5"
+                  {...form.register('actualHours')}
+                />
+              </div>
+            </div>
+
             {/* Recurrence */}
             <div className="space-y-1.5">
               <Label>Recorrência</Label>

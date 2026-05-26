@@ -286,6 +286,33 @@ export function TaskSidebar({ task, currentProfile, onArchived }: Props) {
         </SidebarField>
       </div>
 
+      <div className="grid grid-cols-2 gap-3">
+        <SidebarField label="Horas estimadas">
+          <Input
+            type="number"
+            min="0"
+            step="0.5"
+            className="h-8 text-sm"
+            defaultValue={task.estimated_hours ?? ''}
+            disabled={!canEdit || updateTask.isPending}
+            placeholder="—"
+            onBlur={(e) => update({ estimatedHours: e.target.value ? Number(e.target.value) : undefined })}
+          />
+        </SidebarField>
+        <SidebarField label="Horas reais">
+          <Input
+            type="number"
+            min="0"
+            step="0.5"
+            className="h-8 text-sm"
+            defaultValue={task.actual_hours ?? ''}
+            disabled={!canEdit || updateTask.isPending}
+            placeholder="—"
+            onBlur={(e) => update({ actualHours: e.target.value ? Number(e.target.value) : undefined })}
+          />
+        </SidebarField>
+      </div>
+
       <SidebarField label="Recorrência" isLoading={isRefDataLoading}>
         <Select
           value={task.recurrence_type ?? 'none'}

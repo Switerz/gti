@@ -17,6 +17,8 @@ export function getCreateTaskDefaults(currentProfileId: string, statuses: TaskSt
     startDate: '',
     dueDate: '',
     recurrenceType: 'none',
+    estimatedHours: undefined,
+    actualHours: undefined,
   }
 }
 
@@ -34,6 +36,8 @@ export function buildEditTaskDefaults(task: TaskWithRelations): TaskFormValues {
     startDate: task.start_date ?? '',
     dueDate: task.due_date ?? '',
     recurrenceType: (task.recurrence_type as TaskFormValues['recurrenceType']) ?? 'none',
+    estimatedHours: task.estimated_hours ?? undefined,
+    actualHours: task.actual_hours ?? undefined,
   }
 }
 
@@ -51,6 +55,8 @@ export function buildDuplicateTaskDefaults(task: TaskWithRelations): TaskFormVal
     startDate: '',
     dueDate: '',
     recurrenceType: (task.recurrence_type as TaskFormValues['recurrenceType']) ?? 'none',
+    estimatedHours: task.estimated_hours ?? undefined,
+    actualHours: undefined,
   }
 }
 
@@ -67,6 +73,8 @@ export function buildCreateTaskPayload(values: TaskFormValues, creatorId: string
     due_date: values.dueDate || null,
     start_date: values.startDate || null,
     recurrence_type: values.recurrenceType ?? 'none',
+    estimated_hours: values.estimatedHours ?? null,
+    actual_hours: values.actualHours ?? null,
   }
 }
 
@@ -90,6 +98,8 @@ export function buildUpdateTaskPayload(
   if (values.dueDate !== undefined) updatePayload.due_date = values.dueDate || null
   if (values.startDate !== undefined) updatePayload.start_date = values.startDate || null
   if (values.recurrenceType !== undefined) updatePayload.recurrence_type = values.recurrenceType
+  if (values.estimatedHours !== undefined) updatePayload.estimated_hours = values.estimatedHours || null
+  if (values.actualHours !== undefined) updatePayload.actual_hours = values.actualHours || null
 
   return updatePayload
 }

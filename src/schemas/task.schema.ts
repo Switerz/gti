@@ -14,6 +14,8 @@ export const taskFormSchema = z.object({
   startDate: z.string().optional(),
   dueDate: z.string().optional(),
   recurrenceType: z.enum(['none', 'weekly', 'monthly']).default('none'),
+  estimatedHours: z.coerce.number().min(0).max(9999).optional(),
+  actualHours: z.coerce.number().min(0).max(9999).optional(),
 })
 
 export type TaskFormValues = z.infer<typeof taskFormSchema>

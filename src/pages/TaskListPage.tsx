@@ -205,6 +205,7 @@ export function TaskListPage() {
                       { key: 'status', label: 'Status' },
                       { key: 'priority', label: 'Prioridade' },
                       { key: 'owner', label: 'Responsável' },
+                      { key: null, label: 'Horas' },
                       { key: null, label: 'Categoria' },
                       { key: 'due_date', label: 'Prazo' },
                       { key: 'updated_at', label: 'Atualizado' },
@@ -245,7 +246,7 @@ export function TaskListPage() {
                 {isLoading ? (
                   Array.from({ length: 6 }).map((_, i) => (
                     <tr key={i} className="border-b last:border-0">
-                      {Array.from({ length: 8 }).map((_, j) => (
+                      {Array.from({ length: 9 }).map((_, j) => (
                         <td key={j} className="px-4 py-3">
                           <Skeleton className="h-4 w-full" />
                         </td>
@@ -254,7 +255,7 @@ export function TaskListPage() {
                   ))
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
+                    <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">
                       {search || statusId || priority || categoryId
                         ? 'Nenhuma tarefa para os filtros selecionados.'
                         : 'Nenhuma tarefa ainda. Crie a primeira!'}
@@ -326,6 +327,22 @@ function TaskRow({ task, onEdit }: TaskRowProps) {
         <TaskPriorityBadge priority={task.priority as TaskPriority} />
       </td>
       <td className="px-4 py-3 text-muted-foreground">{task.owner?.full_name ?? '—'}</td>
+      <td className="px-4 py-3">
+        {task.estimated_hours != null || task.actual_hours != null ? (
+          <span className="text-xs text-muted-foreground">
+            {task.actual_hours != null ? (
+              <span className={task.actual_hours > (task.estimated_hours ?? Infinity) ? 'text-destructive' : ''}>
+                {task.actual_hours}h
+              </span>
+            ) : '—'}
+            {task.estimated_hours != null && (
+              <span className="opacity-60"> / {task.estimated_hours}h</span>
+            )}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </td>
       <td className="px-4 py-3">
         {task.category ? (
           <span
