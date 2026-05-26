@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { allowlistService } from '@/features/allowlist/allowlist.service'
+import { profileService } from '@/features/profiles/profile.service'
 import type { UserRole } from '@/types/domain'
 
 export function useAllowlist() {
@@ -28,12 +29,25 @@ export function useAddAllowlistEntry() {
 export function useUpdateAllowlistEntry() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, ...values }: { id: string; role?: UserRole; active?: boolean }) =>
-      allowlistService.update(id, values),
+    mutationFn: async ({
+      id,
+      email,
+      ...values
+    }: {
+      id: string
+      email: string
+      role?: UserRole
+      active?: boolean
+    }) => {
+      await allowlistService.update(id, values)
+      await profileService.updateByEmail(email, values)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allowlist'] })
+      queryClient.invalidateQueries({ queryKey: ['profiles'] })
+      toast.success('Perfil atualizado.')
     },
-    onError: () => toast.error('Erro ao atualizar entrada.'),
+    onError: () => toast.error('Erro ao atualizar perfil.'),
   })
 }
 

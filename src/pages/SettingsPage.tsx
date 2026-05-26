@@ -121,7 +121,7 @@ function AllowlistRow({ entry, isLastAdmin }: { entry: AllowedEmail; isLastAdmin
       <td className="px-4 py-3">
         <Select
           value={entry.role}
-          onValueChange={(v) => updateEntry.mutate({ id: entry.id, role: v as UserRole })}
+          onValueChange={(v) => updateEntry.mutate({ id: entry.id, email: entry.email, role: v as UserRole })}
         >
           <SelectTrigger className="h-7 w-28 text-xs">
             <SelectValue />
@@ -137,7 +137,7 @@ function AllowlistRow({ entry, isLastAdmin }: { entry: AllowedEmail; isLastAdmin
       </td>
       <td className="px-4 py-3">
         <button
-          onClick={() => updateEntry.mutate({ id: entry.id, active: !entry.active })}
+          onClick={() => updateEntry.mutate({ id: entry.id, email: entry.email, active: !entry.active })}
           className={`inline-flex h-6 w-11 items-center rounded-full transition-colors ${
             entry.active ? 'bg-primary' : 'bg-muted'
           }`}
