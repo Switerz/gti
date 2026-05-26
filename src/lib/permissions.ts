@@ -8,6 +8,10 @@ export function isAdmin(profile: Profile | null | undefined) {
   return isActive(profile) && profile?.role === 'admin'
 }
 
+export function isLead(profile: Profile | null | undefined) {
+  return isActive(profile) && profile?.role === 'lead'
+}
+
 export function isLeadOrAdmin(profile: Profile | null | undefined) {
   return isActive(profile) && (profile?.role === 'admin' || profile?.role === 'lead')
 }

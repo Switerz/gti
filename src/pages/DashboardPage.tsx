@@ -1,18 +1,41 @@
 import { isAfter, parseISO, startOfToday, subDays } from 'date-fns'
-import { Activity, AlertOctagon, CalendarClock, CheckCircle2 } from 'lucide-react'
+import { Activity, AlertOctagon, CalendarClock, CheckCircle2, Clock, Tag, TrendingUp, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { TaskDueDateBadge } from '@/components/tasks/TaskDueDateBadge'
 import { TaskPriorityBadge } from '@/components/tasks/TaskPriorityBadge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
+import { useProfiles } from '@/hooks/useProfiles'
 import { useTaskStatuses } from '@/hooks/useTaskStatuses'
-import { useTasks } from '@/hooks/useTasks'
-import { useMyTasks } from '@/hooks/useTasks'
-import { isPastDue } from '@/lib/dates'
-import type { TaskPriority, TaskWithRelations } from '@/types/domain'
+import { useTasks, useMyTasks } from '@/hooks/useTasks'
+import { formatDate, isPastDue } from '@/lib/dates'
+import { isLead } from '@/lib/permissions'
+import type { Profile, TaskPriority, TaskWithRelations } from '@/types/domain'
 import { PageHeader } from './PageHeader'
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+function initials(name?: string | null) {
+  return (
+    name
+      ?.split(' ')
+      .slice(0, 2)
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase() ?? '?'
+  )
+}
+
+function tasksBelongToMember(tasks: TaskWithRelations[], profileId: string) {
+  return tasks.filter(
+    (t) =>
+      t.owner_id === profileId || t.assignees.some((a) => a.profile.id === profileId),
+  )
+}
 
 // ── KPI card ──────────────────────────────────────────────────────────────────
 
@@ -112,13 +135,7 @@ function UpcomingTasks({ tasks, loading }: { tasks: TaskWithRelations[]; loading
 
 // ── Status distribution ───────────────────────────────────────────────────────
 
-function StatusDistribution({
-  tasks,
-  loading,
-}: {
-  tasks: TaskWithRelations[]
-  loading: boolean
-}) {
+function StatusDistribution({ tasks, loading }: { tasks: TaskWithRelations[]; loading: boolean }) {
   const { data: statuses = [] } = useTaskStatuses()
 
   const distribution = statuses
@@ -181,12 +198,348 @@ function StatusDistribution({
   )
 }
 
+// ── Manager: member workload ──────────────────────────────────────────────────
+
+function MemberWorkload({
+  profiles,
+  tasks,
+  loading,
+}: {
+  profiles: Profile[]
+  tasks: TaskWithRelations[]
+  loading: boolean
+}) {
+  const active = profiles.filter((p) => p.active)
+  const openTasks = tasks.filter((t) => !t.status?.is_final && !t.is_archived)
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+          <Users className="h-4 w-4 text-primary" />
+          Carga por membro
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {active.map((p) => {
+              const memberTasks = tasksBelongToMember(openTasks, p.id)
+              const overdue = memberTasks.filter((t) =>
+                isPastDue(t.due_date, t.status?.is_final, t.is_archived),
+              )
+              const estHours = memberTasks.reduce(
+                (sum, t) => sum + (t.estimated_hours ?? 0),
+                0,
+              )
+
+              return (
+                <div
+                  key={p.id}
+                  className="flex flex-col gap-2 rounded-lg border bg-card p-3 transition-colors hover:bg-muted/30"
+                >
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-7 w-7 shrink-0">
+                      <AvatarImage src={p.avatar_url ?? undefined} />
+                      <AvatarFallback className="text-[10px]">
+                        {initials(p.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                      {p.full_name?.split(' ')[0] ?? p.email}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      {memberTasks.length} tarefa{memberTasks.length !== 1 ? 's' : ''}
+                    </span>
+                    {overdue.length > 0 && (
+                      <span className="font-semibold text-destructive">
+                        {overdue.length} atrasada{overdue.length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                  {estHours > 0 && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {estHours}h estimadas
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ── Manager: overdue by member ────────────────────────────────────────────────
+
+function OverdueByMember({
+  profiles,
+  tasks,
+  loading,
+}: {
+  profiles: Profile[]
+  tasks: TaskWithRelations[]
+  loading: boolean
+}) {
+  const overdue = tasks.filter((t) =>
+    isPastDue(t.due_date, t.status?.is_final, t.is_archived),
+  )
+
+  const byMember = profiles
+    .map((p) => ({
+      profile: p,
+      tasks: overdue.filter(
+        (t) =>
+          t.owner_id === p.id || t.assignees.some((a) => a.profile.id === p.id),
+      ),
+    }))
+    .filter((m) => m.tasks.length > 0)
+    .sort((a, b) => b.tasks.length - a.tasks.length)
+
+  return (
+    <Card className="flex flex-col">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+          <AlertOctagon className="h-4 w-4 text-destructive" />
+          Tarefas em atraso
+          {!loading && overdue.length > 0 && (
+            <span className="ml-1 rounded-full bg-destructive/10 px-1.5 py-0.5 text-xs font-semibold text-destructive">
+              {overdue.length}
+            </span>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1 space-y-4">
+        {loading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-3/4" />
+            </div>
+          ))
+        ) : byMember.length === 0 ? (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            Nenhuma tarefa em atraso.
+          </p>
+        ) : (
+          byMember.map(({ profile: p, tasks: mt }) => (
+            <div key={p.id} className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Avatar className="h-5 w-5">
+                  <AvatarImage src={p.avatar_url ?? undefined} />
+                  <AvatarFallback className="text-[9px]">{initials(p.full_name)}</AvatarFallback>
+                </Avatar>
+                <span className="text-xs font-semibold">
+                  {p.full_name?.split(' ')[0] ?? p.email}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  ({mt.length} tarefa{mt.length !== 1 ? 's' : ''})
+                </span>
+              </div>
+              <div className="ml-7 space-y-1">
+                {mt.slice(0, 3).map((t) => (
+                  <div key={t.id} className="flex items-center gap-2">
+                    <Link
+                      to={`/tasks/${t.id}`}
+                      className="flex-1 truncate text-xs text-muted-foreground hover:text-foreground hover:underline"
+                    >
+                      {t.title}
+                    </Link>
+                    <span className="shrink-0 text-[10px] text-destructive">
+                      {formatDate(t.due_date)}
+                    </span>
+                  </div>
+                ))}
+                {mt.length > 3 && (
+                  <p className="text-[10px] text-muted-foreground">
+                    +{mt.length - 3} mais
+                  </p>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ── Manager: category insights ────────────────────────────────────────────────
+
+function CategoryInsights({
+  tasks,
+  loading,
+}: {
+  tasks: TaskWithRelations[]
+  loading: boolean
+}) {
+  const openTasks = tasks.filter((t) => !t.status?.is_final && !t.is_archived)
+
+  const categoryMap = new Map<
+    string,
+    { name: string; color: string | null; count: number; hours: number }
+  >()
+
+  for (const t of openTasks) {
+    if (!t.category) continue
+    const entry = categoryMap.get(t.category.id) ?? {
+      name: t.category.name,
+      color: t.category.color,
+      count: 0,
+      hours: 0,
+    }
+    entry.count++
+    entry.hours += t.estimated_hours ?? 0
+    categoryMap.set(t.category.id, entry)
+  }
+
+  const sorted = Array.from(categoryMap.values()).sort((a, b) => b.count - a.count)
+  const maxCount = Math.max(...sorted.map((c) => c.count), 1)
+
+  return (
+    <Card className="flex flex-col">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+          <Tag className="h-4 w-4 text-primary" />
+          Top categorias
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1 space-y-3">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="space-y-1">
+              <Skeleton className="h-3 w-28" />
+              <Skeleton className="h-2 w-full" />
+            </div>
+          ))
+        ) : sorted.length === 0 ? (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            Nenhuma categoria com tarefas abertas.
+          </p>
+        ) : (
+          sorted.map((c) => (
+            <div key={c.name} className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5">
+                  <div
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: c.color ?? '#888' }}
+                  />
+                  <span className="text-muted-foreground">{c.name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {c.hours > 0 && (
+                    <span className="text-muted-foreground">{c.hours}h</span>
+                  )}
+                  <span className="font-medium">{c.count}</span>
+                </div>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${(c.count / maxCount) * 100}%`,
+                    backgroundColor: c.color ?? '#888',
+                  }}
+                />
+              </div>
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ── Manager: recently completed ───────────────────────────────────────────────
+
+function RecentlyCompleted({
+  tasks,
+  loading,
+}: {
+  tasks: TaskWithRelations[]
+  loading: boolean
+}) {
+  const weekAgo = subDays(startOfToday(), 7)
+  const recent = tasks
+    .filter((t) => t.completed_at && isAfter(parseISO(t.completed_at), weekAgo))
+    .sort((a, b) => (b.completed_at ?? '').localeCompare(a.completed_at ?? ''))
+    .slice(0, 10)
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+          <TrendingUp className="h-4 w-4 text-primary" />
+          Concluídas nos últimos 7 dias
+          {!loading && recent.length > 0 && (
+            <span className="ml-1 font-normal text-muted-foreground">({recent.length})</span>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 py-2">
+              <Skeleton className="h-5 w-5 rounded-full" />
+              <Skeleton className="h-4 flex-1" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          ))
+        ) : recent.length === 0 ? (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            Nenhuma tarefa concluída nos últimos 7 dias.
+          </p>
+        ) : (
+          <div className="divide-y">
+            {recent.map((t) => (
+              <div key={t.id} className="flex items-center gap-3 py-2">
+                <Avatar className="h-5 w-5 shrink-0">
+                  <AvatarImage src={t.owner?.avatar_url ?? undefined} />
+                  <AvatarFallback className="text-[9px]">
+                    {initials(t.owner?.full_name)}
+                  </AvatarFallback>
+                </Avatar>
+                <Link
+                  to={`/tasks/${t.id}`}
+                  className="flex-1 truncate text-sm hover:text-primary hover:underline"
+                >
+                  {t.title}
+                </Link>
+                <div className="flex shrink-0 items-center gap-2">
+                  {t.estimated_hours != null && (
+                    <span className="text-xs text-muted-foreground">{t.estimated_hours}h</span>
+                  )}
+                  <TaskPriorityBadge priority={t.priority as TaskPriority} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export function DashboardPage() {
   const { data: currentProfile } = useCurrentProfile()
   const { data: myTasks = [], isLoading: myLoading } = useMyTasks(currentProfile?.id)
   const { data: allTasks = [], isLoading: allLoading } = useTasks()
+  const { data: profiles = [], isLoading: profilesLoading } = useProfiles()
 
   const today = startOfToday()
   const weekAgo = subDays(today, 7)
@@ -199,6 +552,9 @@ export function DashboardPage() {
   const completedThisWeek = allTasks.filter(
     (t) => t.completed_at && isAfter(parseISO(t.completed_at), weekAgo),
   ).length
+
+  const lead = isLead(currentProfile)
+  const managerLoading = allLoading || profilesLoading
 
   return (
     <section className="space-y-6">
@@ -237,11 +593,45 @@ export function DashboardPage() {
         />
       </div>
 
-      {/* Bottom panels */}
+      {/* Personal panels */}
       <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
         <UpcomingTasks tasks={myTasks} loading={myLoading} />
         <StatusDistribution tasks={allTasks} loading={allLoading} />
       </div>
+
+      {/* Manager section — lead only */}
+      {lead && (
+        <>
+          <div className="flex items-center gap-3">
+            <Separator className="flex-1" />
+            <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <Users className="h-3.5 w-3.5" />
+              Visão Gerencial
+            </span>
+            <Separator className="flex-1" />
+          </div>
+
+          {/* Member workload */}
+          <MemberWorkload
+            profiles={profiles}
+            tasks={allTasks}
+            loading={managerLoading}
+          />
+
+          {/* Overdue + category insights */}
+          <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+            <OverdueByMember
+              profiles={profiles}
+              tasks={allTasks}
+              loading={managerLoading}
+            />
+            <CategoryInsights tasks={allTasks} loading={managerLoading} />
+          </div>
+
+          {/* Recently completed */}
+          <RecentlyCompleted tasks={allTasks} loading={managerLoading} />
+        </>
+      )}
     </section>
   )
 }
