@@ -48,7 +48,6 @@ export const projectService = {
   },
 
   async archive(id: string): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase.rpc as any)('archive_project', { p_id: id })
     if (error) throw error
   },

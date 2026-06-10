@@ -52,6 +52,35 @@ export function useRealtimeSync() {
           queryClient.invalidateQueries({ queryKey: ['tasks'] })
         },
       )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kpis' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['kpis'] })
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kpi_weekly_values' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['kpis'] })
+      })
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'kpi_action_plans' },
+        (payload) => {
+          const kpiId =
+            (payload.new as Record<string, unknown>)?.kpi_id ??
+            (payload.old as Record<string, unknown>)?.kpi_id
+          if (kpiId) {
+            queryClient.invalidateQueries({ queryKey: ['kpis', kpiId, 'action-plans'] })
+            queryClient.invalidateQueries({ queryKey: ['kpis', 'open-action-plans'] })
+          }
+        },
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'kpi_offenders' },
+        (payload) => {
+          const kpiId =
+            (payload.new as Record<string, unknown>)?.kpi_id ??
+            (payload.old as Record<string, unknown>)?.kpi_id
+          if (kpiId) queryClient.invalidateQueries({ queryKey: ['kpis', kpiId, 'offenders'] })
+        },
+      )
       .subscribe()
 
     return () => {

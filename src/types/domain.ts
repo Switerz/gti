@@ -30,6 +30,14 @@ export type TaskAssignee = Database['public']['Tables']['task_assignees']['Row']
 export type TaskComment = Database['public']['Tables']['task_comments']['Row']
 export type TaskChecklistItem = Database['public']['Tables']['task_checklist_items']['Row']
 export type TaskActivityLog = Database['public']['Tables']['task_activity_logs']['Row']
+export type KpiGroup = Database['public']['Tables']['kpi_groups']['Row']
+export type Kpi = Database['public']['Tables']['kpis']['Row']
+export type KpiAssignment = Database['public']['Tables']['kpi_assignments']['Row']
+export type KpiWeeklyValue = Database['public']['Tables']['kpi_weekly_values']['Row']
+export type KpiActionPlan = Database['public']['Tables']['kpi_action_plans']['Row']
+export type KpiOffender = Database['public']['Tables']['kpi_offenders']['Row']
+export type KpiComment = Database['public']['Tables']['kpi_comments']['Row']
+export type KpiActivityLog = Database['public']['Tables']['kpi_activity_logs']['Row']
 
 // ─── Composite / relational types ────────────────────────────────────────────
 
@@ -78,6 +86,40 @@ export type OkrKeyResultWithMilestones = OkrKeyResult & {
 
 export type OkrObjectiveWithKRs = OkrObjective & {
   key_results: OkrKeyResultWithMilestones[]
+}
+
+// ─── KPI types ───────────────────────────────────────────────────────────────
+
+export type KpiTargetOperator = 'gte' | 'lte' | 'eq' | 'informational'
+export type KpiFormatKind = 'percent' | 'number' | 'integer' | 'days' | 'currency' | 'text'
+export type KpiStatus = 'on_track' | 'off_track' | 'neutral' | 'missing'
+export type KpiChartType = 'line' | 'bar' | 'none'
+export type KpiActionPlanStatus =
+  | 'not_started'
+  | 'in_progress'
+  | 'blocked'
+  | 'done'
+  | 'cancelled'
+export type KpiActivityAction =
+  | 'kpi_created'
+  | 'kpi_updated'
+  | 'weekly_value_created'
+  | 'weekly_value_updated'
+  | 'action_plan_created'
+  | 'action_plan_updated'
+  | 'offender_created'
+  | 'offender_updated'
+  | 'comment_added'
+  | 'kpi_archived'
+
+export type KpiWithRelations = Kpi & {
+  group: Pick<KpiGroup, 'id' | 'name' | 'slug' | 'position'> | null
+  category: Pick<Category, 'id' | 'name' | 'color'> | null
+  project: Pick<Project, 'id' | 'name'> | null
+  owner: ProfileSummary | null
+  created_by_profile: ProfileSummary | null
+  assignments: Array<{ profile: ProfileSummary }>
+  weekly_values: KpiWeeklyValue[]
 }
 
 // ─── Navigation ──────────────────────────────────────────────────────────────

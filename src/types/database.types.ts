@@ -425,6 +425,334 @@ export type Database = {
           created_at?: string
         }
       }
+      kpi_groups: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          description: string | null
+          position: number
+          active: boolean
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          description?: string | null
+          position?: number
+          active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          description?: string | null
+          position?: number
+          active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      kpis: {
+        Row: {
+          id: string
+          name: string
+          slug: string | null
+          description: string | null
+          group_id: string | null
+          category_id: string | null
+          project_id: string | null
+          owner_id: string | null
+          created_by: string | null
+          owner_label: string | null
+          product: string | null
+          format_kind: string
+          decimal_places: number
+          target_operator: string
+          target_value: number | null
+          target_label: string | null
+          unit_label: string | null
+          chart_type: string
+          active: boolean
+          position: number
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug?: string | null
+          description?: string | null
+          group_id?: string | null
+          category_id?: string | null
+          project_id?: string | null
+          owner_id?: string | null
+          created_by?: string | null
+          owner_label?: string | null
+          product?: string | null
+          format_kind?: string
+          decimal_places?: number
+          target_operator?: string
+          target_value?: number | null
+          target_label?: string | null
+          unit_label?: string | null
+          chart_type?: string
+          active?: boolean
+          position?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string | null
+          description?: string | null
+          group_id?: string | null
+          category_id?: string | null
+          project_id?: string | null
+          owner_id?: string | null
+          created_by?: string | null
+          owner_label?: string | null
+          product?: string | null
+          format_kind?: string
+          decimal_places?: number
+          target_operator?: string
+          target_value?: number | null
+          target_label?: string | null
+          unit_label?: string | null
+          chart_type?: string
+          active?: boolean
+          position?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      kpi_assignments: {
+        Row: {
+          kpi_id: string
+          profile_id: string
+          assigned_by: string | null
+          created_at: string | null
+        }
+        Insert: {
+          kpi_id: string
+          profile_id: string
+          assigned_by?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          kpi_id?: string
+          profile_id?: string
+          assigned_by?: string | null
+          created_at?: string | null
+        }
+      }
+      kpi_weekly_values: {
+        Row: {
+          id: string
+          kpi_id: string | null
+          iso_year: number
+          iso_week: number
+          week_start: string
+          week_end: string
+          value: number | null
+          value_text: string | null
+          target_value_snapshot: number | null
+          target_operator_snapshot: string | null
+          status: string
+          notes: string | null
+          created_by: string | null
+          updated_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          kpi_id?: string | null
+          iso_year: number
+          iso_week: number
+          week_start: string
+          week_end: string
+          value?: number | null
+          value_text?: string | null
+          target_value_snapshot?: number | null
+          target_operator_snapshot?: string | null
+          status?: string
+          notes?: string | null
+          created_by?: string | null
+          updated_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          kpi_id?: string | null
+          iso_year?: number
+          iso_week?: number
+          week_start?: string
+          week_end?: string
+          value?: number | null
+          value_text?: string | null
+          target_value_snapshot?: number | null
+          target_operator_snapshot?: string | null
+          status?: string
+          notes?: string | null
+          created_by?: string | null
+          updated_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      kpi_action_plans: {
+        Row: {
+          id: string
+          kpi_id: string | null
+          kpi_weekly_value_id: string | null
+          restriction_text: string | null
+          restriction_doc: Json | null
+          action_text: string | null
+          action_doc: Json | null
+          due_date: string | null
+          status: string
+          owner_id: string | null
+          created_by: string | null
+          position: number
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          kpi_id?: string | null
+          kpi_weekly_value_id?: string | null
+          restriction_text?: string | null
+          restriction_doc?: Json | null
+          action_text?: string | null
+          action_doc?: Json | null
+          due_date?: string | null
+          status?: string
+          owner_id?: string | null
+          created_by?: string | null
+          position?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          kpi_id?: string | null
+          kpi_weekly_value_id?: string | null
+          restriction_text?: string | null
+          restriction_doc?: Json | null
+          action_text?: string | null
+          action_doc?: Json | null
+          due_date?: string | null
+          status?: string
+          owner_id?: string | null
+          created_by?: string | null
+          position?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      kpi_offenders: {
+        Row: {
+          id: string
+          kpi_id: string | null
+          kpi_weekly_value_id: string | null
+          label: string
+          impact_value: number
+          impact_label: string | null
+          description: string | null
+          position: number
+          created_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          kpi_id?: string | null
+          kpi_weekly_value_id?: string | null
+          label: string
+          impact_value: number
+          impact_label?: string | null
+          description?: string | null
+          position?: number
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          kpi_id?: string | null
+          kpi_weekly_value_id?: string | null
+          label?: string
+          impact_value?: number
+          impact_label?: string | null
+          description?: string | null
+          position?: number
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      kpi_comments: {
+        Row: {
+          id: string
+          kpi_id: string | null
+          kpi_weekly_value_id: string | null
+          author_id: string | null
+          body: string
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          kpi_id?: string | null
+          kpi_weekly_value_id?: string | null
+          author_id?: string | null
+          body: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          kpi_id?: string | null
+          kpi_weekly_value_id?: string | null
+          author_id?: string | null
+          body?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      kpi_activity_logs: {
+        Row: {
+          id: string
+          kpi_id: string | null
+          actor_id: string | null
+          action: string
+          metadata: Json | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          kpi_id?: string | null
+          actor_id?: string | null
+          action: string
+          metadata?: Json | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          kpi_id?: string | null
+          actor_id?: string | null
+          action?: string
+          metadata?: Json | null
+          created_at?: string | null
+        }
+      }
     }
     Views: Record<string, never>
     Functions: {
@@ -442,6 +770,10 @@ export type Database = {
       }
       can_edit_task: {
         Args: { task_id: string }
+        Returns: boolean
+      }
+      can_edit_kpi: {
+        Args: { kpi_id: string }
         Returns: boolean
       }
     }

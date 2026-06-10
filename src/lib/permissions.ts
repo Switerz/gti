@@ -1,4 +1,4 @@
-import type { Profile, TaskWithRelations } from '@/types/domain'
+import type { KpiWithRelations, Profile, TaskWithRelations } from '@/types/domain'
 
 function isActive(profile: Profile | null | undefined) {
   return Boolean(profile?.active)
@@ -60,4 +60,22 @@ export function canArchiveTask(profile: Profile | null | undefined, task: TaskWi
 
 export function canManageCategories(profile: Profile | null | undefined) {
   return isLeadOrAdmin(profile)
+}
+
+export function canEditKpi(profile: Profile | null | undefined, kpi: KpiWithRelations) {
+  if (!profile || !profile.active) return false
+  if (profile.role === 'admin' || profile.role === 'lead') return true
+
+  return (
+    kpi.created_by === profile.id ||
+    kpi.owner_id === profile.id ||
+    kpi.assignments.some((assignment) => assignment.profile.id === profile.id)
+  )
+}
+
+export function canArchiveKpi(profile: Profile | null | undefined, kpi: KpiWithRelations) {
+  if (!profile || !profile.active) return false
+  if (profile.role === 'admin' || profile.role === 'lead') return true
+
+  return kpi.created_by === profile.id || kpi.owner_id === profile.id
 }
