@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react'
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type {
@@ -32,12 +33,39 @@ function KpiMeta({ kpi }: { kpi: KpiWithRelations }) {
   )
 }
 
-function KpiSecondary({ kpi }: { kpi: KpiWithRelations }) {
-  const owner = kpi.owner?.full_name ?? kpi.owner_label
+function getInitials(name: string | null | undefined) {
   return (
-    <span className="text-xs text-muted-foreground">
-      {[kpi.product, owner].filter(Boolean).join(' · ') || 'Sem responsável'}
-    </span>
+    name
+      ?.split(' ')
+      .slice(0, 2)
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase() ?? '?'
+  )
+}
+
+function KpiSecondary({ kpi }: { kpi: KpiWithRelations }) {
+  const owner = kpi.owner
+  const hasOwner = owner || kpi.owner_label
+  const hasProduct = !!kpi.product
+
+  return (
+    <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
+      {!hasOwner && !hasProduct && <span>Sem responsável</span>}
+      {hasProduct && <span>{kpi.product}</span>}
+      {hasProduct && hasOwner && <span>·</span>}
+      {owner ? (
+        <>
+          <Avatar className="h-4 w-4 shrink-0">
+            <AvatarImage src={owner.avatar_url ?? undefined} />
+            <AvatarFallback className="text-[8px]">{getInitials(owner.full_name)}</AvatarFallback>
+          </Avatar>
+          <span className="truncate">{owner.full_name}</span>
+        </>
+      ) : kpi.owner_label ? (
+        <span className="truncate">{kpi.owner_label}</span>
+      ) : null}
+    </div>
   )
 }
 

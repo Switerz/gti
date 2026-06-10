@@ -47,7 +47,7 @@ function profile(role: 'admin' | 'lead' | 'member'): Profile {
 
 describe('canManageCategories', () => {
   it('allows admin', () => expect(canManageCategories(profile('admin'))).toBe(true))
-  it('blocks lead', () => expect(canManageCategories(profile('lead'))).toBe(false))
+  it('allows lead', () => expect(canManageCategories(profile('lead'))).toBe(true))
   it('blocks member', () => expect(canManageCategories(profile('member'))).toBe(false))
   it('blocks null profile', () => expect(canManageCategories(null)).toBe(false))
 })

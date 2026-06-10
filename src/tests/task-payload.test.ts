@@ -109,6 +109,8 @@ describe('task payload helpers', () => {
       due_date: null,
       start_date: null,
       recurrence_type: 'none',
+      estimated_hours: null,
+      actual_hours: null,
     })
   })
 

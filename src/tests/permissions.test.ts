@@ -108,9 +108,9 @@ describe('permission helpers', () => {
     expect(canArchiveTask(profile({ id: 'lead', role: 'lead' }), task())).toBe(false)
   })
 
-  it('allows only admins to manage categories', () => {
+  it('allows lead and admin to manage categories', () => {
     expect(canManageCategories(profile({ role: 'admin' }))).toBe(true)
-    expect(canManageCategories(profile({ role: 'lead' }))).toBe(false)
+    expect(canManageCategories(profile({ role: 'lead' }))).toBe(true)
     expect(canManageCategories(profile({ role: 'member' }))).toBe(false)
     expect(canManageCategories(null)).toBe(false)
   })
