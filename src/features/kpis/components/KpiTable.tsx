@@ -71,9 +71,6 @@ function KpiSecondary({ kpi }: { kpi: KpiWithRelations }) {
               </Avatar>
             ))}
           </div>
-          {displayProfiles.length === 1 && (
-            <span className="truncate">{displayProfiles[0].full_name}</span>
-          )}
         </div>
       ) : kpi.owner_label ? (
         <span className="truncate">{kpi.owner_label}</span>
