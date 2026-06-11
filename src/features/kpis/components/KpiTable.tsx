@@ -8,6 +8,7 @@ import type {
   KpiTargetOperator,
   KpiWeeklyValue,
   KpiWithRelations,
+  ProfileSummary,
 } from '@/types/domain'
 
 import type { IsoWeek } from '../kpi-utils'
@@ -45,8 +46,14 @@ function getInitials(name: string | null | undefined) {
 }
 
 function KpiSecondary({ kpi }: { kpi: KpiWithRelations }) {
-  const owner = kpi.owner
-  const hasOwner = owner || kpi.owner_label
+  const assignmentProfiles = kpi.assignments
+    .map((a) => a.profile)
+    .filter((p): p is ProfileSummary => !!p)
+
+  const displayProfiles =
+    assignmentProfiles.length > 0 ? assignmentProfiles : kpi.owner ? [kpi.owner] : []
+
+  const hasOwner = displayProfiles.length > 0 || !!kpi.owner_label
   const hasProduct = !!kpi.product
 
   return (
@@ -54,14 +61,20 @@ function KpiSecondary({ kpi }: { kpi: KpiWithRelations }) {
       {!hasOwner && !hasProduct && <span>Sem responsável</span>}
       {hasProduct && <span>{kpi.product}</span>}
       {hasProduct && hasOwner && <span>·</span>}
-      {owner ? (
-        <>
-          <Avatar className="h-4 w-4 shrink-0">
-            <AvatarImage src={owner.avatar_url ?? undefined} />
-            <AvatarFallback className="text-[8px]">{getInitials(owner.full_name)}</AvatarFallback>
-          </Avatar>
-          <span className="truncate">{owner.full_name}</span>
-        </>
+      {displayProfiles.length > 0 ? (
+        <div className="flex items-center gap-1">
+          <div className="flex -space-x-1">
+            {displayProfiles.slice(0, 3).map((profile) => (
+              <Avatar key={profile.id} className="h-4 w-4 shrink-0 border border-card" title={profile.full_name ?? undefined}>
+                <AvatarImage src={profile.avatar_url ?? undefined} />
+                <AvatarFallback className="text-[8px]">{getInitials(profile.full_name)}</AvatarFallback>
+              </Avatar>
+            ))}
+          </div>
+          {displayProfiles.length === 1 && (
+            <span className="truncate">{displayProfiles[0].full_name}</span>
+          )}
+        </div>
       ) : kpi.owner_label ? (
         <span className="truncate">{kpi.owner_label}</span>
       ) : null}
