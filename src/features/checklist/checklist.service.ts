@@ -58,6 +58,26 @@ export const checklistService = {
     return data as unknown as TaskChecklistItem
   },
 
+  async updateTitle(id: string, title: string, actorId?: string): Promise<TaskChecklistItem> {
+    const { data, error } = await (supabase.from('task_checklist_items') as any)
+      .update({ title })
+      .eq('id', id)
+      .select('*')
+      .single()
+    if (error) throw error
+
+    if (actorId) {
+      await (supabase.from('task_activity_logs') as any).insert({
+        task_id: data.task_id,
+        actor_id: actorId,
+        action: 'task_updated',
+        metadata: { checklist_item_id: data.id, checklist_item_title: title },
+      })
+    }
+
+    return data as unknown as TaskChecklistItem
+  },
+
   async delete(id: string): Promise<void> {
     const { error } = await (supabase.from('task_checklist_items') as any).delete().eq('id', id)
     if (error) throw error

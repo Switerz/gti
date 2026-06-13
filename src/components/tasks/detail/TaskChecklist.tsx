@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { CheckSquare, Plus, Trash2 } from 'lucide-react'
+import { CheckSquare, Pencil, Plus, Save, Trash2, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -10,6 +10,7 @@ import {
   useDeleteChecklistItem,
   useTaskChecklist,
   useToggleChecklistItem,
+  useUpdateChecklistItem,
 } from '@/hooks/useTaskChecklist'
 
 interface Props {
@@ -21,10 +22,13 @@ export function TaskChecklist({ taskId, currentProfileId }: Props) {
   const { data: items = [], isLoading } = useTaskChecklist(taskId)
   const createItem = useCreateChecklistItem(taskId)
   const toggleItem = useToggleChecklistItem(taskId)
+  const updateItem = useUpdateChecklistItem(taskId)
   const deleteItem = useDeleteChecklistItem(taskId)
 
   const [newTitle, setNewTitle] = useState('')
   const [adding, setAdding] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState('')
 
   const done = items.filter((i) => i.is_done).length
   const total = items.length
@@ -36,6 +40,30 @@ export function TaskChecklist({ taskId, currentProfileId }: Props) {
     await createItem.mutateAsync({ title, position: items.length, actorId: currentProfileId })
     setNewTitle('')
     setAdding(false)
+  }
+
+  function startEditing(id: string, title: string) {
+    setEditingId(id)
+    setEditingTitle(title)
+    setAdding(false)
+    setNewTitle('')
+  }
+
+  function cancelEditing() {
+    setEditingId(null)
+    setEditingTitle('')
+  }
+
+  async function handleUpdate(id: string, currentTitle: string) {
+    const title = editingTitle.trim()
+    if (!title) return
+    if (title === currentTitle) {
+      cancelEditing()
+      return
+    }
+
+    await updateItem.mutateAsync({ id, title, actorId: currentProfileId })
+    cancelEditing()
   }
 
   return (
@@ -85,24 +113,75 @@ export function TaskChecklist({ taskId, currentProfileId }: Props) {
               <Checkbox
                 checked={item.is_done}
                 aria-label={item.title}
+                disabled={editingId === item.id}
                 onCheckedChange={(checked) =>
                   toggleItem.mutate({ id: item.id, isDone: !!checked, actorId: currentProfileId })
                 }
               />
-              <span
-                className={
-                  item.is_done ? 'flex-1 text-sm line-through text-muted-foreground' : 'flex-1 text-sm'
-                }
-              >
-                {item.title}
-              </span>
-              <button
-                onClick={() => deleteItem.mutate(item.id)}
-                aria-label={`Excluir ${item.title}`}
-                className="invisible text-muted-foreground hover:text-destructive group-hover:visible"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              {editingId === item.id ? (
+                <>
+                  <Input
+                    autoFocus
+                    aria-label={`Editar ${item.title}`}
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleUpdate(item.id, item.title)
+                      if (e.key === 'Escape') cancelEditing()
+                    }}
+                    className="h-8 flex-1 text-sm"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Salvar ${item.title}`}
+                    onClick={() => handleUpdate(item.id, item.title)}
+                    disabled={!editingTitle.trim() || updateItem.isPending}
+                    className="h-8 w-8"
+                  >
+                    <Save className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Cancelar edicao de ${item.title}`}
+                    onClick={cancelEditing}
+                    className="h-8 w-8"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <span
+                    className={
+                      item.is_done
+                        ? 'flex-1 text-sm line-through text-muted-foreground'
+                        : 'flex-1 text-sm'
+                    }
+                  >
+                    {item.title}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => startEditing(item.id, item.title)}
+                    aria-label={`Editar ${item.title}`}
+                    className="invisible text-muted-foreground hover:text-foreground group-hover:visible focus:visible"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteItem.mutate(item.id)}
+                    aria-label={`Excluir ${item.title}`}
+                    className="invisible text-muted-foreground hover:text-destructive group-hover:visible focus:visible"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </>
+              )}
             </li>
           ))}
         </ul>

@@ -38,6 +38,20 @@ export function useToggleChecklistItem(taskId: string) {
   })
 }
 
+export function useUpdateChecklistItem(taskId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, title, actorId }: { id: string; title: string; actorId: string }) =>
+      checklistService.updateTitle(id, title, actorId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task-checklist', taskId] })
+      queryClient.invalidateQueries({ queryKey: ['tasks', taskId] })
+      queryClient.invalidateQueries({ queryKey: ['task-activity', taskId] })
+    },
+    onError: () => toast.error('Erro ao editar item.'),
+  })
+}
+
 export function useDeleteChecklistItem(taskId: string) {
   const queryClient = useQueryClient()
   return useMutation({
