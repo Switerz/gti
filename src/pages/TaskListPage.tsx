@@ -26,33 +26,15 @@ import { useTasks } from '@/hooks/useTasks'
 import { formatDate } from '@/lib/dates'
 import { canEditTask, canExportTasks } from '@/lib/permissions'
 import { fromOptionalSelectValue, SELECT_ALL_VALUE, toSelectValue } from '@/lib/select-values'
+import {
+  sortTasks,
+  type TaskListSortDir,
+  type TaskListSortKey,
+} from '@/features/tasks/task-list-sort'
 import type { TaskPriority, TaskWithRelations } from '@/types/domain'
 import { PageHeader } from './PageHeader'
 
-type SortKey = 'title' | 'status' | 'priority' | 'owner' | 'due_date' | 'updated_at'
-type SortDir = 'asc' | 'desc'
-
-const PRIORITY_ORDER: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 }
-
-function sortTasks(tasks: TaskWithRelations[], key: SortKey, dir: SortDir): TaskWithRelations[] {
-  return [...tasks].sort((a, b) => {
-    let cmp = 0
-    if (key === 'title') {
-      cmp = (a.title ?? '').localeCompare(b.title ?? '', 'pt-BR')
-    } else if (key === 'status') {
-      cmp = (a.status?.name ?? '').localeCompare(b.status?.name ?? '', 'pt-BR')
-    } else if (key === 'priority') {
-      cmp = (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4)
-    } else if (key === 'owner') {
-      cmp = (a.owner?.full_name ?? '').localeCompare(b.owner?.full_name ?? '', 'pt-BR')
-    } else if (key === 'due_date') {
-      cmp = (a.due_date ?? '').localeCompare(b.due_date ?? '')
-    } else if (key === 'updated_at') {
-      cmp = (a.updated_at ?? '').localeCompare(b.updated_at ?? '')
-    }
-    return dir === 'asc' ? cmp : -cmp
-  })
-}
+type SortKey = TaskListSortKey
 
 export function TaskListPage() {
   const { data: currentProfile } = useCurrentProfile()
@@ -62,8 +44,8 @@ export function TaskListPage() {
   const [categoryId, setCategoryId] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<TaskWithRelations | null>(null)
-  const [sortKey, setSortKey] = useState<SortKey>('updated_at')
-  const [sortDir, setSortDir] = useState<SortDir>('desc')
+  const [sortKey, setSortKey] = useState<TaskListSortKey>('updated_at')
+  const [sortDir, setSortDir] = useState<TaskListSortDir>('desc')
 
   const { data: statuses = [] } = useTaskStatuses()
   const { data: categories = [] } = useCategories()
@@ -81,7 +63,7 @@ export function TaskListPage() {
   )
   const canExport = canExportTasks(currentProfile)
 
-  function handleSort(key: SortKey) {
+  function handleSort(key: TaskListSortKey) {
     if (key === sortKey) {
       setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
     } else {

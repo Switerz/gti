@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { authService, hasAuthCallbackParams } from '@/features/auth/auth.service'
+import { isSupabaseConfigured } from '@/lib/supabase'
 import { withTimeout } from '@/lib/timeout'
 
 const SESSION_QUERY_TIMEOUT_MS = 6_000
@@ -10,6 +11,8 @@ export function useSession() {
     queryKey: ['auth', 'session'],
     queryFn: () => withTimeout(authService.getSession(), SESSION_QUERY_TIMEOUT_MS, 'session query timed out'),
     initialData: () => {
+      if (!isSupabaseConfigured) return null
+
       const cachedSession = authService.getCachedSession()
       if (cachedSession) return cachedSession
 
@@ -23,9 +26,9 @@ export function useSession() {
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     networkMode: 'always',
-    // AuthProvider seeds this cache via setQueryData (from onAuthStateChange INITIAL_SESSION),
-    // so the queryFn only runs if the cache is somehow empty on first mount.
-    // enabled: false would be ideal but breaks the fallback — keep enabled + fast-path via setQueryData.
+    enabled: isSupabaseConfigured,
+    // AuthProvider seeds this cache via INITIAL_SESSION. Placeholder envs used
+    // by CI/E2E stay offline and resolve as unauthenticated.
     gcTime: Infinity,
   })
 }

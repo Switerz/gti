@@ -5,7 +5,13 @@ import type { Database } from '@/types/database.types'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
+export const isSupabaseConfigured = Boolean(
+  supabaseUrl &&
+    supabaseAnonKey &&
+    !supabaseUrl.includes('placeholder.supabase.co') &&
+    supabaseAnonKey !== 'placeholder' &&
+    supabaseAnonKey !== 'placeholder-anon-key',
+)
 
 export const supabase = createClient<Database>(
   supabaseUrl || 'https://placeholder.supabase.co',

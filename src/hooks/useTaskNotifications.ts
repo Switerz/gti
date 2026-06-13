@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { notificationService } from '@/features/notifications/notification.service'
 import {
-  buildTaskAssignmentNotification,
   getUnreadNotificationCount,
   markAllNotificationsRead,
   markNotificationRead,
@@ -13,11 +12,18 @@ import {
   upsertNotification,
 } from '@/features/notifications/notification-utils'
 import { supabase } from '@/lib/supabase'
-import type { TaskAssignee } from '@/types/domain'
 
 export function useTaskNotifications(currentProfileId?: string) {
   const queryClient = useQueryClient()
-  const [notifications, setNotifications] = useState<TaskAssignmentNotification[]>([])
+  const queryKey = useMemo(
+    () => ['task-assignment-notifications', currentProfileId] as const,
+    [currentProfileId],
+  )
+  const { data: notifications = [] } = useQuery({
+    queryKey,
+    queryFn: () => notificationService.getTaskAssignmentNotifications(currentProfileId!),
+    enabled: !!currentProfileId,
+  })
 
   useEffect(() => {
     if (!currentProfileId) return
@@ -29,20 +35,19 @@ export function useTaskNotifications(currentProfileId?: string) {
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'task_assignees',
+          table: 'task_assignment_notifications',
           filter: `profile_id=eq.${currentProfileId}`,
         },
         (payload) => {
-          const row = payload.new as TaskAssignee
-
           void (async () => {
-            const summary = await notificationService
-              .getTaskAssignmentSummary(row.task_id)
+            const notification = await notificationService
+              .getTaskAssignmentNotification(String((payload.new as { id?: string }).id))
               .catch(() => null)
-            const notification = buildTaskAssignmentNotification(row, currentProfileId, summary)
             if (!notification) return
 
-            setNotifications((current) => upsertNotification(current, notification))
+            queryClient.setQueryData<TaskAssignmentNotification[]>(queryKey, (current = []) =>
+              upsertNotification(current, notification),
+            )
             queryClient.invalidateQueries({ queryKey: ['tasks'] })
 
             toast.info('Nova tarefa atribuida', {
@@ -62,16 +67,32 @@ export function useTaskNotifications(currentProfileId?: string) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [currentProfileId, queryClient])
+  }, [currentProfileId, queryClient, queryKey])
 
   const unreadCount = useMemo(() => getUnreadNotificationCount(notifications), [notifications])
 
   return {
     notifications,
     unreadCount,
-    markAsRead: (notificationId: string) =>
-      setNotifications((current) => markNotificationRead(current, notificationId)),
-    markAllAsRead: () => setNotifications((current) => markAllNotificationsRead(current)),
-    clear: () => setNotifications([]),
+    markAsRead: (notificationId: string) => {
+      queryClient.setQueryData<TaskAssignmentNotification[]>(queryKey, (current = []) =>
+        markNotificationRead(current, notificationId),
+      )
+      void notificationService.markTaskAssignmentNotificationRead(notificationId)
+    },
+    markAllAsRead: () => {
+      queryClient.setQueryData<TaskAssignmentNotification[]>(queryKey, (current = []) =>
+        markAllNotificationsRead(current),
+      )
+      if (currentProfileId) {
+        void notificationService.markAllTaskAssignmentNotificationsRead(currentProfileId)
+      }
+    },
+    clear: () => {
+      queryClient.setQueryData<TaskAssignmentNotification[]>(queryKey, [])
+      if (currentProfileId) {
+        void notificationService.clearTaskAssignmentNotifications(currentProfileId)
+      }
+    },
   }
 }

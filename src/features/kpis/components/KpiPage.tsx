@@ -1,8 +1,5 @@
 import { useMemo, useState } from 'react'
 
-import { Plus } from 'lucide-react'
-import { toast } from 'sonner'
-
 import { EmptyState } from '@/components/shared/EmptyState'
 import { ErrorState } from '@/components/shared/ErrorState'
 import { LoadingState } from '@/components/shared/LoadingState'
@@ -139,10 +136,6 @@ export function KpiPage() {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
-  function handleNewKpi() {
-    toast.info('Cadastro de KPI será habilitado na próxima etapa.')
-  }
-
   function handleSaveWeeklyValue(
     kpi: KpiWithRelations,
     week: IsoWeek,
@@ -171,12 +164,6 @@ export function KpiPage() {
       <PageHeader
         title="KPIs"
         description="Acompanhamento semanal dos indicadores de Transportes"
-        actions={
-          <Button onClick={handleNewKpi}>
-            <Plus className="h-4 w-4" />
-            Novo KPI
-          </Button>
-        }
       />
 
       <div className="grid gap-3 sm:grid-cols-3">

@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase'
 import type { TaskActivityAction, TaskFormValues, TaskWithRelations } from '@/types/domain'
 
 import {
-  buildCreateTaskPayload,
   buildTaskAssigneeRows,
   buildUpdateTaskPayload,
 } from './task-payload'
@@ -108,28 +107,24 @@ export const taskService = {
   },
 
   async create(values: TaskFormValues, creatorId: string): Promise<TaskWithRelations> {
-    const { data: task, error } = await db.tasks()
-      .insert(buildCreateTaskPayload(values, creatorId))
-      .select('id')
-      .single()
-
+    const { data: taskId, error } = await (supabase.rpc as any)('create_task_with_assignees', {
+      p_title: values.title.trim(),
+      p_description: values.description?.trim() || null,
+      p_status_id: values.statusId,
+      p_category_id: values.categoryId || null,
+      p_project_id: values.projectId || null,
+      p_owner_id: values.ownerId || creatorId,
+      p_priority: values.priority,
+      p_due_date: values.dueDate || null,
+      p_start_date: values.startDate || null,
+      p_recurrence_type: values.recurrenceType ?? 'none',
+      p_estimated_hours: values.estimatedHours ?? null,
+      p_actual_hours: values.actualHours ?? null,
+      p_assignee_ids: values.assigneeIds ?? [],
+    })
     if (error) throw error
 
-    const assigneeRows = buildTaskAssigneeRows({
-      taskId: task.id,
-      actorId: creatorId,
-      ownerId: values.ownerId || creatorId,
-      assigneeIds: values.assigneeIds,
-    })
-
-    if (assigneeRows.length > 0) {
-      const { error: assignError } = await db.task_assignees().insert(assigneeRows)
-      if (assignError) throw assignError
-    }
-
-    await taskService.logActivity(task.id, creatorId, 'task_created')
-
-    const full = await taskService.getById(task.id)
+    const full = await taskService.getById(taskId)
     if (!full) throw new Error('Task created but not found')
     return full
   },
