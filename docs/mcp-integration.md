@@ -121,6 +121,18 @@ Tarefas urgentes:
 Liste minhas tarefas urgentes abertas no GTI. Traga titulo, status, projeto, prazo e progresso de checklist.
 ```
 
+Resumo operacional:
+
+```text
+Resuma minhas tarefas no GTI. Traga contagens por status/prioridade, tarefas atrasadas, proximas de vencer e progresso medio de checklist.
+```
+
+Resumo de projeto:
+
+```text
+Resuma o projeto <projectId> no GTI. Destaque status, prioridades, atrasos, proximos vencimentos e progresso de checklist.
+```
+
 Busca:
 
 ```text
@@ -157,12 +169,13 @@ Adicione um comentario na tarefa <id> dizendo: ...
 2. `gti_healthcheck`
 3. `gti_list_task_statuses`
 4. `gti_list_projects`
-5. `gti_list_tasks`
-6. `gti_get_task`
-7. `gti_add_checklist_item`
-8. `gti_add_comment`
+5. `gti_summarize_my_tasks`
+6. `gti_list_tasks`
+7. `gti_get_task`
+8. `gti_add_checklist_item`
+9. `gti_add_comment`
 
-Para os passos 7 e 8, use uma tarefa de teste e confira `logs/mcp-audit.jsonl`.
+Para os passos 8 e 9, use uma tarefa de teste e confira `logs/mcp-audit.jsonl`.
 
 ## Troubleshooting
 

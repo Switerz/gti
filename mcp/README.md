@@ -46,6 +46,9 @@ npm run mcp:start
 - `gti_list_tasks`
 - `gti_search_tasks`
 - `gti_get_task`
+- `gti_summarize_my_tasks`
+- `gti_summarize_project`
+- `gti_summarize_category`
 - `gti_create_task`
 - `gti_update_task`
 - `gti_move_task_status`
@@ -70,6 +73,11 @@ Algumas acoes exigem flags explicitas:
 
 Use `gti_list_profiles` ou `gti_search_profiles` para encontrar `id`, `full_name`, `email`, `role` e `active` antes de atribuir tarefas.
 Ferramentas de criacao/atualizacao de tarefas devem receber IDs reais retornados por essas consultas.
+
+## Resumos operacionais
+
+Use `gti_summarize_my_tasks`, `gti_summarize_project` e `gti_summarize_category` para obter contagens por status/prioridade, tarefas atrasadas, tarefas proximas de vencer e progresso de checklist.
+Os resumos excluem tarefas arquivadas e retornam apenas top N tarefas em listas operacionais.
 
 ## Auditoria
 

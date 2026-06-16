@@ -67,6 +67,9 @@ Leitura:
 - `gti_list_tasks`
 - `gti_search_tasks`
 - `gti_get_task`
+- `gti_summarize_my_tasks`
+- `gti_summarize_project`
+- `gti_summarize_category`
 
 Escrita controlada:
 - `gti_create_task`

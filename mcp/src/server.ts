@@ -8,6 +8,7 @@ import { registerHealthcheckTool } from './tools/healthcheck.js'
 import { registerReferenceDataTools } from './tools/reference-data.js'
 import { registerTaskCollaborationTools } from './tools/task-collaboration.js'
 import { registerTaskReadTools } from './tools/tasks.js'
+import { registerTaskSummaryTools } from './tools/task-summaries.js'
 import { registerTaskWriteTools } from './tools/task-writes.js'
 
 const config = getConfig()
@@ -22,6 +23,7 @@ registerContextTools(server)
 registerHealthcheckTool(server, config)
 registerReferenceDataTools(server, config)
 registerTaskReadTools(server, config)
+registerTaskSummaryTools(server, config)
 registerTaskWriteTools(server, config)
 registerTaskCollaborationTools(server, config)
 

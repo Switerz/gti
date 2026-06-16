@@ -477,7 +477,7 @@ Resultado:
 
 ## Sprint MCP 13 - Resumos Operacionais
 
-Status: pendente
+Status: concluida localmente
 
 Objetivo: dar ao agente ferramentas de leitura mais executivas.
 
@@ -494,6 +494,21 @@ Validacao:
 - Comparar contagens com `gti_list_tasks`.
 - Testar com projeto sem tarefas.
 - Testar com categoria sem tarefas.
+
+Resultado:
+- Criada ferramenta `gti_summarize_my_tasks`.
+- Criada ferramenta `gti_summarize_project`.
+- Criada ferramenta `gti_summarize_category`.
+- Resumos incluem contagem por status, prioridade, vencimento, tarefas atrasadas, proximas de vencer e progresso de checklist.
+- Tarefas arquivadas ficam excluidas.
+- Listas de tarefas usam `topN`, com padrao `5` e maximo `10`.
+- Consultas usam `fetchLimit`, com padrao `200` e maximo `500`.
+- README, guia de integracao, politica de permissoes e checklist de entrega atualizados.
+- Validacao real de leitura concluida:
+  - `gti_summarize_my_tasks` retornou total, abertas, atrasadas, proximas de vencer e percentual de checklist.
+  - `gti_summarize_project` bateu com `gti_list_tasks` para projeto real.
+  - `gti_summarize_category` bateu com `gti_list_tasks` para categoria real.
+  - Projeto e categoria sem tarefas retornaram total `0`.
 
 ## Sprint MCP 14 - Sugestoes de Proximas Acoes
 

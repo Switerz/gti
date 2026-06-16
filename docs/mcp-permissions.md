@@ -45,6 +45,9 @@ Este documento registra os guardrails operacionais do MCP de dominio do GTI.
 - `gti_get_task`: comentarios/atividades recentes com maximo `20`.
 - `gti_list_profiles`: limite padrao `20`, maximo `50`, apenas ativos por padrao.
 - `gti_search_profiles`: limite padrao `20`, maximo `50`, apenas ativos por padrao.
+- `gti_summarize_my_tasks`: consulta ate `200` tarefas por padrao, maximo `500`, e retorna listas com `topN` maximo `10`.
+- `gti_summarize_project`: consulta ate `200` tarefas por padrao, maximo `500`, e retorna listas com `topN` maximo `10`.
+- `gti_summarize_category`: consulta ate `200` tarefas por padrao, maximo `500`, e retorna listas com `topN` maximo `10`.
 - Comentarios: maximo `4000` caracteres.
 - Titulo de tarefa: maximo `140` caracteres.
 - Item de checklist: maximo `500` caracteres.
