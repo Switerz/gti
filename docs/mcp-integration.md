@@ -2,6 +2,8 @@
 
 Este guia mostra como conectar o MCP de dominio do GTI em clientes MCP locais.
 
+Manual visual em HTML, com passo a passo para Claude/Codex, exemplos de prompts e troubleshooting: `docs/mcp-manual.html`.
+
 ## Pre-requisitos
 
 Compile o servidor:

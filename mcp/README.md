@@ -107,6 +107,7 @@ Guia para Codex, Claude Desktop e prompts de teste:
 
 ```txt
 docs/mcp-integration.md
+docs/mcp-manual.html
 ```
 
 Checklist de entrega:

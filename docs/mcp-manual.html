@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manual MCP GTI - Claude e Codex</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0f141d;
+      --panel: #151c28;
+      --panel-2: #101722;
+      --text: #eef4ff;
+      --muted: #a9b8d4;
+      --line: #2b3548;
+      --accent: #7fb3ff;
+      --good: #3dd68c;
+      --warn: #ffd166;
+      --danger: #ff7b7b;
+      --code: #0b1018;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      border-right: 1px solid var(--line);
+      background: #0c111a;
+      padding: 28px 22px;
+    }
+
+    aside h2 {
+      margin: 0 0 16px;
+      font-size: 18px;
+    }
+
+    nav a {
+      display: block;
+      padding: 8px 0;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    nav a:hover {
+      color: var(--text);
+    }
+
+    main {
+      max-width: 1040px;
+      padding: 42px 44px 80px;
+    }
+
+    .hero {
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 28px;
+      padding-bottom: 28px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 44px 0 14px;
+      font-size: 26px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 24px 0 10px;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 0 0 14px;
+      color: var(--muted);
+    }
+
+    ul,
+    ol {
+      color: var(--muted);
+      padding-left: 22px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 18px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      padding: 4px 10px;
+      font-size: 13px;
+      margin: 0 6px 8px 0;
+      white-space: nowrap;
+    }
+
+    .ok {
+      color: var(--good);
+    }
+
+    .warn {
+      color: var(--warn);
+    }
+
+    .danger {
+      color: var(--danger);
+    }
+
+    pre {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--code);
+      padding: 16px;
+      color: #d9e6ff;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    code {
+      border-radius: 5px;
+      background: var(--code);
+      color: #d9e6ff;
+      padding: 2px 5px;
+      font-size: 0.92em;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin: 12px 0 20px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--panel-2);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    td {
+      color: var(--muted);
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .callout {
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      background: var(--panel-2);
+      padding: 16px;
+      margin: 16px 0;
+    }
+
+    .callout.warning {
+      border-left-color: var(--warn);
+    }
+
+    .callout.danger {
+      border-left-color: var(--danger);
+    }
+
+    @media (max-width: 860px) {
+      .shell {
+        display: block;
+      }
+
+      aside {
+        position: static;
+        height: auto;
+      }
+
+      main {
+        padding: 28px 18px 60px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <h2>MCP GTI</h2>
+      <nav>
+        <a href="#visao-geral">Visao geral</a>
+        <a href="#desktop">Desktop ou agente?</a>
+        <a href="#pre-requisitos">Pre-requisitos</a>
+        <a href="#token">Token de sessao</a>
+        <a href="#claude">Claude Desktop</a>
+        <a href="#codex">Codex</a>
+        <a href="#features">Features</a>
+        <a href="#prompts">Prompts prontos</a>
+        <a href="#guardrails">Guardrails</a>
+        <a href="#validacao">Validacao</a>
+        <a href="#troubleshooting">Troubleshooting</a>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="hero" id="visao-geral">
+        <h1>Manual MCP GTI</h1>
+        <p>
+          Guia pratico para conectar o MCP de dominio do GTI em Claude Desktop e Codex, usar as ferramentas de tarefas, KPIs e OKRs, e operar com seguranca usando token de sessao.
+        </p>
+        <span class="pill">GTI</span>
+        <span class="pill">Claude Desktop</span>
+        <span class="pill">Codex CLI / IDE</span>
+        <span class="pill">MCP stdio</span>
+      </section>
+
+      <section id="desktop">
+        <h2>Ele serve para desktop ou precisa ser agente de codigo?</h2>
+        <div class="callout">
+          <p>
+            O MCP do GTI foi implementado como um servidor MCP <strong>stdio</strong>. Isso quer dizer que ele e um conector MCP normal: qualquer cliente MCP que suporte iniciar um processo local consegue usar, desde que tenha Node, caminho correto do projeto e variaveis de ambiente.
+          </p>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Funciona?</th>
+              <th>Observacao</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Claude Desktop</td>
+              <td><span class="ok">Sim</span></td>
+              <td>Use o JSON de MCP Desktop com caminho absoluto para `mcp/dist/server.js` e variaveis de ambiente.</td>
+            </tr>
+            <tr>
+              <td>Codex CLI</td>
+              <td><span class="ok">Sim</span></td>
+              <td>O manual do Codex documenta suporte a MCP stdio na CLI via `config.toml` ou `codex mcp add`.</td>
+            </tr>
+            <tr>
+              <td>Codex IDE extension</td>
+              <td><span class="ok">Sim</span></td>
+              <td>O manual do Codex documenta que CLI e extensao IDE compartilham configuracao MCP.</td>
+            </tr>
+            <tr>
+              <td>Codex desktop app</td>
+              <td><span class="warn">Depende do suporte MCP disponivel na sua versao</span></td>
+              <td>O app tem status/comandos de MCP no manual, mas a configuracao de MCP local e documentada com garantia para CLI e IDE. Se o app mostrar `/mcp` e ler o mesmo `config.toml`, deve aparecer ali.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          Em outras palavras: ele nao precisa ser usado apenas dentro de um agente de codigo. Ele e um MCP local normal. A diferenca e que algumas ferramentas fazem mais sentido em agentes que sabem raciocinar sobre tarefas, IDs, confirmacoes e consequencias.
+        </p>
+      </section>
+
+      <section id="pre-requisitos">
+        <h2>Pre-requisitos</h2>
+        <ol>
+          <li>Repositorio GTI clonado em `C:\Users\Notebook\Desktop\gti`.</li>
+          <li>Node instalado.</li>
+          <li>Dependencias instaladas com `npm install`.</li>
+          <li>Servidor MCP compilado com `npm run mcp:build`.</li>
+          <li>Token de sessao atual copiado pela UI do GTI.</li>
+        </ol>
+
+        <pre><code>cd C:\Users\Notebook\Desktop\gti
+npm install
+npm run mcp:build
+npm run mcp:smoke</code></pre>
+      </section>
+
+      <section id="token">
+        <h2>Token de sessao</h2>
+        <p>
+          O MCP usa `GTI_MCP_USER_ACCESS_TOKEN`, que e o access token da sessao do usuario logado no GTI. No Supabase, esse access token normalmente expira em cerca de 1 hora.
+        </p>
+
+        <div class="callout warning">
+          <p>
+            Nao copie `refresh_token` para o MCP. O refresh token renova sessoes e tem risco maior. O GTI copia somente o access token curto.
+          </p>
+        </div>
+
+        <h3>Como copiar</h3>
+        <ol>
+          <li>Abra `https://go-gti.vercel.app/settings`.</li>
+          <li>No card MCP, clique em `Atualizar sessao`.</li>
+          <li>Copie `Token`, `.env` ou `.mcp.json`.</li>
+          <li>Se o card avisar token expirado/perto de expirar, atualize antes de copiar.</li>
+        </ol>
+
+        <h3>.env local recomendado</h3>
+        <pre><code>VITE_SUPABASE_URL=https://SEU_PROJETO.supabase.co
+VITE_SUPABASE_ANON_KEY=SUA_ANON_KEY
+GTI_MCP_USER_ACCESS_TOKEN=ACCESS_TOKEN_COPIADO_DA_UI</code></pre>
+      </section>
+
+      <section id="claude">
+        <h2>Claude Desktop</h2>
+        <p>
+          Claude Desktop usa um arquivo JSON de configuracao MCP. O caminho exato varia por sistema/instalacao, mas o formato do servidor GTI e este:
+        </p>
+
+        <pre><code>{
+  "mcpServers": {
+    "gti": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\Notebook\\Desktop\\gti\\mcp\\dist\\server.js"
+      ],
+      "env": {
+        "VITE_SUPABASE_URL": "https://SEU_PROJETO.supabase.co",
+        "VITE_SUPABASE_ANON_KEY": "SUA_ANON_KEY",
+        "GTI_MCP_USER_ACCESS_TOKEN": "ACCESS_TOKEN_COPIADO_DA_UI"
+      }
+    }
+  }
+}</code></pre>
+
+        <h3>Fluxo</h3>
+        <ol>
+          <li>Compile o MCP: `npm run mcp:build`.</li>
+          <li>Copie token/snippet novo no GTI.</li>
+          <li>Atualize o JSON do Claude Desktop.</li>
+          <li>Reinicie o Claude Desktop.</li>
+          <li>Peca: "Use o MCP GTI e chame `gti_healthcheck`".</li>
+        </ol>
+      </section>
+
+      <section id="codex">
+        <h2>Codex</h2>
+        <p>
+          O Codex documenta suporte a MCP stdio na CLI e na extensao IDE. A configuracao fica em `config.toml`, normalmente em `~/.codex/config.toml`, ou em `.codex/config.toml` dentro de um projeto confiavel.
+        </p>
+
+        <h3>Opcao 1: config.toml</h3>
+        <pre><code>[mcp_servers.gti]
+command = "node"
+args = ["mcp/dist/server.js"]
+cwd = "C:\\Users\\Notebook\\Desktop\\gti"
+
+[mcp_servers.gti.env]
+VITE_SUPABASE_URL = "https://SEU_PROJETO.supabase.co"
+VITE_SUPABASE_ANON_KEY = "SUA_ANON_KEY"
+GTI_MCP_USER_ACCESS_TOKEN = "ACCESS_TOKEN_COPIADO_DA_UI"</code></pre>
+
+        <h3>Opcao 2: carregar do ambiente local</h3>
+        <p>
+          Como o servidor MCP do GTI tambem le `.env` quando inicia na raiz do projeto, voce pode deixar o token no `.env` local e configurar so comando/cwd:
+        </p>
+
+        <pre><code>[mcp_servers.gti]
+command = "node"
+args = ["mcp/dist/server.js"]
+cwd = "C:\\Users\\Notebook\\Desktop\\gti"</code></pre>
+
+        <h3>Verificar no Codex</h3>
+        <pre><code>/mcp</code></pre>
+        <p>
+          Use `/mcp` para conferir se o servidor `gti` aparece ativo. Depois peca ao agente para chamar `gti_healthcheck`.
+        </p>
+      </section>
+
+      <section id="features">
+        <h2>Features do MCP GTI</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Contexto</h3>
+            <ul>
+              <li>`gti_get_site_context`</li>
+              <li>Recursos `gti://context/site` e `gti://context/tasks`</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Referencias</h3>
+            <ul>
+              <li>Status, categorias e projetos</li>
+              <li>Perfis e busca de pessoas por nome/email</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Tarefas</h3>
+            <ul>
+              <li>Listar, buscar e abrir detalhes</li>
+              <li>Criar, atualizar, mover status e arquivar com confirmacao</li>
+              <li>Checklist e comentarios</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Resumos</h3>
+            <ul>
+              <li>Minhas tarefas</li>
+              <li>Projeto e categoria</li>
+              <li>Sugestoes de proximas acoes</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>KPIs</h3>
+            <ul>
+              <li>Listar KPIs</li>
+              <li>Abrir KPI</li>
+              <li>Resumo semanal fora da meta</li>
+              <li>Planos de acao</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>OKRs</h3>
+            <ul>
+              <li>Listar objetivos</li>
+              <li>Key results</li>
+              <li>Marcos e progresso calculado</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Lista de ferramentas</h3>
+        <p>
+          `gti_healthcheck`, `gti_get_site_context`, `gti_list_task_statuses`, `gti_list_categories`, `gti_list_projects`, `gti_list_profiles`, `gti_search_profiles`, `gti_list_kpis`, `gti_get_kpi`, `gti_summarize_kpis_off_track`, `gti_list_kpi_action_plans`, `gti_list_okrs`, `gti_list_tasks`, `gti_search_tasks`, `gti_get_task`, `gti_summarize_my_tasks`, `gti_summarize_project`, `gti_summarize_category`, `gti_suggest_next_actions`, `gti_create_task`, `gti_update_task`, `gti_move_task_status`, `gti_archive_task`, `gti_add_checklist_item`, `gti_update_checklist_item`, `gti_toggle_checklist_item`, `gti_delete_checklist_item`, `gti_add_comment`.
+        </p>
+      </section>
+
+      <section id="prompts">
+        <h2>Prompts prontos</h2>
+
+        <h3>Contexto inicial</h3>
+        <pre><code>Use o MCP do GTI. Leia o contexto do site e me diga quais ferramentas estao disponiveis antes de agir.</code></pre>
+
+        <h3>Tarefas urgentes</h3>
+        <pre><code>Liste minhas tarefas urgentes abertas no GTI. Traga titulo, status, projeto, prazo e progresso de checklist.</code></pre>
+
+        <h3>Resumo operacional</h3>
+        <pre><code>Resuma minhas tarefas no GTI. Traga contagens por status/prioridade, tarefas atrasadas, proximas de vencer e progresso medio de checklist.</code></pre>
+
+        <h3>Proximas acoes</h3>
+        <pre><code>Sugira proximas acoes para minhas tarefas no GTI. Use apenas tarefas reais, cite os IDs e explique o criterio usado. Nao crie tarefas, nao mova status e nao comente automaticamente.</code></pre>
+
+        <h3>Criar tarefa</h3>
+        <pre><code>Crie uma tarefa no GTI com titulo "Revisar SLA transportadora", prioridade medium e status &lt;statusId&gt;. Antes, confirme que os IDs de status/projeto existem.</code></pre>
+
+        <h3>Atribuir para outra pessoa</h3>
+        <pre><code>Procure o perfil de Maria pelo MCP e, se encontrar um unico resultado, crie uma tarefa atribuida a ela. Use o ID retornado pela busca e inclua confirmAssignedToOther=true.</code></pre>
+
+        <h3>KPIs</h3>
+        <pre><code>Liste os KPIs fora da meta na semana atual e destaque quais estao sem valor informado.</code></pre>
+
+        <h3>OKRs</h3>
+        <pre><code>Liste os OKRs do GTI com progresso por objetivo, key result e marcos.</code></pre>
+      </section>
+
+      <section id="guardrails">
+        <h2>Guardrails</h2>
+        <ul>
+          <li>O MCP age como o usuario do token `GTI_MCP_USER_ACCESS_TOKEN`.</li>
+          <li>Nao usa `service_role`.</li>
+          <li>Leituras e escritas respeitam RLS do Supabase.</li>
+          <li>Arquivar tarefa exige `confirmArchive=true`.</li>
+          <li>Deletar checklist exige `confirmDelete=true`.</li>
+          <li>Mover para status final exige `confirmFinalize=true`.</li>
+          <li>Trocar responsavel exige `confirmOwnerChange=true`.</li>
+          <li>Criar tarefa para outra pessoa exige `confirmAssignedToOther=true`.</li>
+          <li>Ferramentas de sugestao nao escrevem nada automaticamente.</li>
+          <li>Ferramentas de KPI/OKR atuais sao somente leitura.</li>
+        </ul>
+      </section>
+
+      <section id="validacao">
+        <h2>Validacao</h2>
+        <pre><code>npm run mcp:build
+npm run mcp:smoke
+npm run mcp:check
+npm run mcp:permissions</code></pre>
+
+        <p>
+          `mcp:permissions` precisa de tokens separados de `member`, `lead` e `admin` para validar permissoes reais. Sem esses tokens, ele pula os papeis e explica o que falta.
+        </p>
+      </section>
+
+      <section id="troubleshooting">
+        <h2>Troubleshooting</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Erro</th>
+              <th>Causa comum</th>
+              <th>Como resolver</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>`GTI_MCP_USER_ACCESS_TOKEN is required`</td>
+              <td>Token ausente no `.env` ou config MCP.</td>
+              <td>Copie novo snippet no GTI e reinicie o cliente MCP.</td>
+            </tr>
+            <tr>
+              <td>`token is expired`</td>
+              <td>Access token passou de aproximadamente 1 hora.</td>
+              <td>Atualize sessao no card MCP, copie novo token e rode `npm run mcp:smoke`.</td>
+            </tr>
+            <tr>
+              <td>Servidor nao aparece no cliente</td>
+              <td>Caminho errado, build ausente ou cliente nao reiniciado.</td>
+              <td>Rode `npm run mcp:build`, use caminho absoluto no Claude e reinicie.</td>
+            </tr>
+            <tr>
+              <td>Ferramenta pede confirmacao</td>
+              <td>Acao sensivel.</td>
+              <td>Repita com a flag correta apenas apos confirmacao humana.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
