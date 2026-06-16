@@ -15,6 +15,7 @@ const expectedTools = [
   'gti_summarize_my_tasks',
   'gti_summarize_project',
   'gti_summarize_category',
+  'gti_suggest_next_actions',
   'gti_create_task',
   'gti_update_task',
   'gti_move_task_status',

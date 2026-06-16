@@ -49,6 +49,7 @@ npm run mcp:start
 - `gti_summarize_my_tasks`
 - `gti_summarize_project`
 - `gti_summarize_category`
+- `gti_suggest_next_actions`
 - `gti_create_task`
 - `gti_update_task`
 - `gti_move_task_status`
@@ -78,6 +79,11 @@ Ferramentas de criacao/atualizacao de tarefas devem receber IDs reais retornados
 
 Use `gti_summarize_my_tasks`, `gti_summarize_project` e `gti_summarize_category` para obter contagens por status/prioridade, tarefas atrasadas, tarefas proximas de vencer e progresso de checklist.
 Os resumos excluem tarefas arquivadas e retornam apenas top N tarefas em listas operacionais.
+
+## Sugestoes de proximas acoes
+
+Use `gti_suggest_next_actions` para receber sugestoes textuais baseadas em tarefas reais atrasadas, urgentes, sem responsavel, sem checklist, proximas de vencer ou paradas em status inicial.
+A ferramenta e somente leitura: ela nao cria tarefas, nao move status e nao adiciona comentarios automaticamente.
 
 ## Auditoria
 

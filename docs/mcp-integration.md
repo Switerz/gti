@@ -133,6 +133,12 @@ Resumo de projeto:
 Resuma o projeto <projectId> no GTI. Destaque status, prioridades, atrasos, proximos vencimentos e progresso de checklist.
 ```
 
+Proximas acoes:
+
+```text
+Sugira proximas acoes para minhas tarefas no GTI. Use apenas tarefas reais, cite os IDs e explique o criterio usado. Nao crie tarefas, nao mova status e nao comente automaticamente.
+```
+
 Busca:
 
 ```text
@@ -170,12 +176,13 @@ Adicione um comentario na tarefa <id> dizendo: ...
 3. `gti_list_task_statuses`
 4. `gti_list_projects`
 5. `gti_summarize_my_tasks`
-6. `gti_list_tasks`
-7. `gti_get_task`
-8. `gti_add_checklist_item`
-9. `gti_add_comment`
+6. `gti_suggest_next_actions`
+7. `gti_list_tasks`
+8. `gti_get_task`
+9. `gti_add_checklist_item`
+10. `gti_add_comment`
 
-Para os passos 8 e 9, use uma tarefa de teste e confira `logs/mcp-audit.jsonl`.
+Para os passos 9 e 10, use uma tarefa de teste e confira `logs/mcp-audit.jsonl`.
 
 ## Troubleshooting
 

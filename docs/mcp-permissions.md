@@ -17,6 +17,7 @@ Este documento registra os guardrails operacionais do MCP de dominio do GTI.
 - O MCP age como o usuario de `GTI_MCP_USER_ACCESS_TOKEN`.
 - Escritas devem manter autoria em `auth.uid()` ou no actor resolvido pela sessao.
 - Ferramentas de perfis sao somente leitura e devem ser usadas para obter IDs reais antes de atribuir tarefas.
+- `gti_suggest_next_actions` e somente leitura e nao deve executar automaticamente as sugestoes retornadas.
 
 ## Confirmacoes Obrigatorias
 
@@ -48,6 +49,7 @@ Este documento registra os guardrails operacionais do MCP de dominio do GTI.
 - `gti_summarize_my_tasks`: consulta ate `200` tarefas por padrao, maximo `500`, e retorna listas com `topN` maximo `10`.
 - `gti_summarize_project`: consulta ate `200` tarefas por padrao, maximo `500`, e retorna listas com `topN` maximo `10`.
 - `gti_summarize_category`: consulta ate `200` tarefas por padrao, maximo `500`, e retorna listas com `topN` maximo `10`.
+- `gti_suggest_next_actions`: consulta ate `200` tarefas por padrao, maximo `500`, e retorna ate `20` sugestoes.
 - Comentarios: maximo `4000` caracteres.
 - Titulo de tarefa: maximo `140` caracteres.
 - Item de checklist: maximo `500` caracteres.

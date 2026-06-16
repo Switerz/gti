@@ -70,6 +70,7 @@ Leitura:
 - `gti_summarize_my_tasks`
 - `gti_summarize_project`
 - `gti_summarize_category`
+- `gti_suggest_next_actions`
 
 Escrita controlada:
 - `gti_create_task`

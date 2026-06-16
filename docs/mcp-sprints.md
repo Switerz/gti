@@ -512,7 +512,7 @@ Resultado:
 
 ## Sprint MCP 14 - Sugestoes de Proximas Acoes
 
-Status: pendente
+Status: concluida localmente
 
 Objetivo: ajudar no planejamento sem executar mudancas automaticamente.
 
@@ -532,6 +532,18 @@ Validacao:
 - Rodar em tarefas pessoais.
 - Rodar em projeto especifico.
 - Conferir se sugestoes citam IDs reais.
+
+Resultado:
+- Criada ferramenta `gti_suggest_next_actions`.
+- A ferramenta e somente leitura e nao cria tarefas, move status ou adiciona comentarios.
+- Escopos suportados: `my_tasks`, `project` e `category`.
+- Criterios usados: atrasada, urgente, sem responsavel, sem checklist, status inicial e proxima de vencer.
+- Sugestoes retornam `taskId`, titulo, prioridade, prazo, status, responsavel, criterios e sugestao textual.
+- Resultados limitados por `maxSuggestions`, com padrao `10` e maximo `20`.
+- Consultas usam `fetchLimit`, com padrao `200` e maximo `500`.
+- README, guia de integracao, politica de permissoes e checklist de entrega atualizados.
+- `npm run mcp:check` passou com 23 ferramentas.
+- Validacao real com dados ficou pendente porque o `GTI_MCP_USER_ACCESS_TOKEN` local estava expirado.
 
 ## Sprint MCP 15 - KPIs e OKRs
 
