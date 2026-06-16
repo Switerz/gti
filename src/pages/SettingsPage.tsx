@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Pencil, ShieldAlert, Tag, Trash2, UserCog } from 'lucide-react'
+import { Check, Clipboard, KeyRound, Pencil, Plug, ShieldAlert, Tag, Trash2, UserCog } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -37,7 +37,9 @@ import {
   useUpdateCategory,
 } from '@/hooks/useCategories'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
+import { useSession } from '@/hooks/useSession'
 import { canManageAllowlist, canManageCategories } from '@/lib/permissions'
+import { supabase } from '@/lib/supabase'
 import type { AllowedEmail, Category, UserRole } from '@/types/domain'
 
 import { PageHeader } from './PageHeader'
@@ -103,6 +105,127 @@ function MyProfileCard() {
             </div>
           </div>
         )}
+      </CardContent>
+    </Card>
+  )
+}
+
+function formatExpiresAt(expiresAt?: number) {
+  if (!expiresAt) return 'indisponivel'
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  }).format(new Date(expiresAt * 1000))
+}
+
+function McpIntegrationCard() {
+  const { data: session, refetch, isFetching } = useSession()
+  const [copied, setCopied] = useState<'token' | 'env' | 'json' | null>(null)
+  const accessToken = session?.access_token
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+  const isReady = Boolean(accessToken && supabaseUrl && supabaseAnonKey)
+
+  async function refreshSession() {
+    await supabase.auth.refreshSession()
+    await refetch()
+  }
+
+  async function copyText(kind: 'token' | 'env' | 'json', text: string) {
+    await navigator.clipboard.writeText(text)
+    setCopied(kind)
+    window.setTimeout(() => setCopied(null), 1800)
+  }
+
+  const envSnippet = isReady
+    ? [
+        `VITE_SUPABASE_URL=${supabaseUrl}`,
+        `VITE_SUPABASE_ANON_KEY=${supabaseAnonKey}`,
+        `GTI_MCP_USER_ACCESS_TOKEN=${accessToken}`,
+      ].join('\n')
+    : ''
+
+  const mcpJsonSnippet = isReady
+    ? JSON.stringify(
+        {
+          mcpServers: {
+            gti: {
+              command: 'node',
+              args: ['mcp/dist/server.js'],
+              env: {
+                VITE_SUPABASE_URL: supabaseUrl,
+                VITE_SUPABASE_ANON_KEY: supabaseAnonKey,
+                GTI_MCP_USER_ACCESS_TOKEN: accessToken,
+              },
+            },
+          },
+        },
+        null,
+        2,
+      )
+    : ''
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Plug className="h-4 w-4" />
+          MCP
+        </CardTitle>
+        <CardDescription>Integração local para Codex e Claude usando sua sessão atual.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="rounded-lg border bg-muted/20 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <KeyRound className="h-4 w-4 text-muted-foreground" />
+                {isReady ? 'Sessão pronta' : 'Sessão indisponível'}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Expiração: {formatExpiresAt(session?.expires_at)}
+              </p>
+            </div>
+            <Button size="sm" variant="outline" onClick={refreshSession} disabled={isFetching}>
+              {isFetching ? 'Atualizando...' : 'Atualizar sessão'}
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-3">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!accessToken}
+            onClick={() => accessToken && copyText('token', accessToken)}
+          >
+            {copied === 'token' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+            Token
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!isReady}
+            onClick={() => copyText('env', envSnippet)}
+          >
+            {copied === 'env' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+            .env
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!isReady}
+            onClick={() => copyText('json', mcpJsonSnippet)}
+          >
+            {copied === 'json' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+            .mcp.json
+          </Button>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          O token permite operar como seu usuário até expirar. Não copie refresh token.
+        </p>
       </CardContent>
     </Card>
   )
@@ -587,6 +710,7 @@ export function SettingsPage() {
 
       <div className="mx-auto max-w-2xl space-y-6">
         <MyProfileCard />
+        <McpIntegrationCard />
 
         {isAdmin ? (
           <AllowlistSection />

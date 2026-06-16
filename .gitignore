@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 dist
+mcp/dist
 test-results
 playwright-report
 playwright/.auth
@@ -31,3 +32,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.vercel

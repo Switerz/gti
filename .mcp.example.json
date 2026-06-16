@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "gti": {
+      "command": "node",
+      "args": [
+        "mcp/dist/server.js"
+      ],
+      "env": {
+        "SUPABASE_URL": "https://SEU_PROJETO.supabase.co",
+        "SUPABASE_ANON_KEY": "sua_anon_key",
+        "GTI_MCP_USER_ACCESS_TOKEN": "token_de_usuario"
+      }
+    },
+    "supabase": {
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "npx -y @supabase/mcp-server-supabase@latest --access-token $env:SUPABASE_ACCESS_TOKEN"
+      ]
+    }
+  }
+}
