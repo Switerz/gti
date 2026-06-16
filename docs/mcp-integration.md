@@ -139,6 +139,18 @@ Proximas acoes:
 Sugira proximas acoes para minhas tarefas no GTI. Use apenas tarefas reais, cite os IDs e explique o criterio usado. Nao crie tarefas, nao mova status e nao comente automaticamente.
 ```
 
+KPIs fora da meta:
+
+```text
+Liste os KPIs fora da meta na semana atual e destaque quais estao sem valor informado.
+```
+
+OKRs:
+
+```text
+Liste os OKRs do GTI com progresso por objetivo, key result e marcos.
+```
+
 Busca:
 
 ```text
@@ -177,12 +189,14 @@ Adicione um comentario na tarefa <id> dizendo: ...
 4. `gti_list_projects`
 5. `gti_summarize_my_tasks`
 6. `gti_suggest_next_actions`
-7. `gti_list_tasks`
-8. `gti_get_task`
-9. `gti_add_checklist_item`
-10. `gti_add_comment`
+7. `gti_summarize_kpis_off_track`
+8. `gti_list_okrs`
+9. `gti_list_tasks`
+10. `gti_get_task`
+11. `gti_add_checklist_item`
+12. `gti_add_comment`
 
-Para os passos 9 e 10, use uma tarefa de teste e confira `logs/mcp-audit.jsonl`.
+Para os passos 11 e 12, use uma tarefa de teste e confira `logs/mcp-audit.jsonl`.
 
 ## Troubleshooting
 

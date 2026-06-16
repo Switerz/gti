@@ -37,7 +37,7 @@ npm run mcp:check
 ```json
 {
   "ok": true,
-  "tools": 23,
+  "tools": 28,
   "resources": 2
 }
 ```
@@ -61,6 +61,11 @@ Para uso completo com banco:
 - `gti_list_projects`
 - `gti_list_profiles`
 - `gti_search_profiles`
+- `gti_list_kpis`
+- `gti_get_kpi`
+- `gti_summarize_kpis_off_track`
+- `gti_list_kpi_action_plans`
+- `gti_list_okrs`
 - `gti_list_tasks`
 - `gti_search_tasks`
 - `gti_get_task`
@@ -86,6 +91,7 @@ Para uso completo com banco:
 - Atribuicoes devem usar IDs reais retornados por `gti_list_profiles` ou `gti_search_profiles`.
 - Resumos operacionais excluem arquivadas e limitam listas de tarefas por `topN`.
 - Sugestoes de proximas acoes sao somente leitura e citam IDs reais de tarefas.
+- Ferramentas de KPIs e OKRs da Sprint 15 sao somente leitura.
 - Mover para status final exige `confirmFinalize=true`.
 - Trocar responsavel principal exige `confirmOwnerChange=true`.
 - Criar tarefa para outra pessoa ou com assignees exige `confirmAssignedToOther=true`.

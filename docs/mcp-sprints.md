@@ -547,7 +547,7 @@ Resultado:
 
 ## Sprint MCP 15 - KPIs e OKRs
 
-Status: pendente
+Status: concluida localmente
 
 Objetivo: expandir o MCP para leitura e operacao leve de KPIs/OKRs.
 
@@ -562,6 +562,19 @@ Validacao:
 - Comparar com pagina `/kpis`.
 - Comparar com pagina `/okrs`.
 - Testar usuario `member`, `lead` e `admin`.
+
+Resultado:
+- Criada ferramenta `gti_list_kpis`.
+- Criada ferramenta `gti_get_kpi`.
+- Criada ferramenta `gti_summarize_kpis_off_track`.
+- Criada ferramenta `gti_list_kpi_action_plans`.
+- Criada ferramenta `gti_list_okrs`.
+- Ferramentas de KPIs/OKRs ficaram somente leitura nesta sprint.
+- Resumo de KPIs fora da meta calcula status da semana atual ou de semana informada.
+- OKRs retornam objetivos, KRs, marcos e progresso calculado.
+- README, guia de integracao, politica de permissoes e checklist de entrega atualizados.
+- `npm run mcp:build` passou.
+- Validacao real com dados ficou pendente porque o `GTI_MCP_USER_ACCESS_TOKEN` local estava expirado.
 
 ## Sprint MCP 16 - Hardening de Autenticacao e Token
 

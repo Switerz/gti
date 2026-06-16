@@ -5,6 +5,7 @@ import { getConfig } from './config.js'
 import { registerContextResources } from './resources/context.js'
 import { registerContextTools } from './tools/context.js'
 import { registerHealthcheckTool } from './tools/healthcheck.js'
+import { registerKpiOkrTools } from './tools/kpis-okrs.js'
 import { registerReferenceDataTools } from './tools/reference-data.js'
 import { registerTaskCollaborationTools } from './tools/task-collaboration.js'
 import { registerTaskNextActionTools } from './tools/task-next-actions.js'
@@ -23,6 +24,7 @@ registerContextResources(server)
 registerContextTools(server)
 registerHealthcheckTool(server, config)
 registerReferenceDataTools(server, config)
+registerKpiOkrTools(server, config)
 registerTaskReadTools(server, config)
 registerTaskSummaryTools(server, config)
 registerTaskNextActionTools(server, config)
