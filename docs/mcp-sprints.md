@@ -445,7 +445,7 @@ Resultado:
 
 ## Sprint MCP 12 - Perfil, Pessoas e Resolucao por Nome
 
-Status: pendente
+Status: concluida localmente
 
 Objetivo: permitir que agentes encontrem pessoas sem inventar IDs.
 
@@ -461,6 +461,19 @@ Validacao:
 - Buscar usuario por nome.
 - Buscar usuario por email.
 - Usar ID retornado para criar tarefa atribuida a outra pessoa com confirmacao.
+
+Resultado:
+- Criada ferramenta `gti_list_profiles`.
+- Criada ferramenta `gti_search_profiles`.
+- Ambas retornam `id`, `full_name`, `email`, `role` e `active`.
+- Perfis inativos ficam ocultos por padrao via `activeOnly=true`.
+- Resultados limitados por `limit`, com padrao `20` e maximo `50`.
+- Busca por nome e email usa consultas separadas e junta os resultados por ID.
+- README, politica de permissoes e checklist de entrega atualizados.
+- Validacao real de leitura concluida:
+  - `gti_list_profiles` retornou 5 perfis ativos com `limit: 5`.
+  - `gti_search_profiles` encontrou perfil por nome.
+  - `gti_search_profiles` encontrou o mesmo perfil por email.
 
 ## Sprint MCP 13 - Resumos Operacionais
 

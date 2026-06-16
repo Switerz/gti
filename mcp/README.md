@@ -41,6 +41,8 @@ npm run mcp:start
 - `gti_list_task_statuses`
 - `gti_list_categories`
 - `gti_list_projects`
+- `gti_list_profiles`
+- `gti_search_profiles`
 - `gti_list_tasks`
 - `gti_search_tasks`
 - `gti_get_task`
@@ -63,6 +65,11 @@ Algumas acoes exigem flags explicitas:
 - `confirmFinalize=true` para mover uma tarefa para status final.
 - `confirmArchive=true` para arquivar uma tarefa.
 - `confirmDelete=true` para remover item de checklist.
+
+## Resolucao de pessoas
+
+Use `gti_list_profiles` ou `gti_search_profiles` para encontrar `id`, `full_name`, `email`, `role` e `active` antes de atribuir tarefas.
+Ferramentas de criacao/atualizacao de tarefas devem receber IDs reais retornados por essas consultas.
 
 ## Auditoria
 

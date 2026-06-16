@@ -7,6 +7,8 @@ const expectedTools = [
   'gti_list_task_statuses',
   'gti_list_categories',
   'gti_list_projects',
+  'gti_list_profiles',
+  'gti_search_profiles',
   'gti_list_tasks',
   'gti_search_tasks',
   'gti_get_task',

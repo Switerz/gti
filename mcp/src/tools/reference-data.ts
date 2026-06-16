@@ -38,6 +38,14 @@ const ProjectSchema = z.object({
     .nullable(),
 })
 
+const ProfileSchema = z.object({
+  id: z.string(),
+  full_name: z.string().nullable(),
+  email: z.string(),
+  role: z.enum(['admin', 'lead', 'member']),
+  active: z.boolean(),
+})
+
 const TaskStatusesOutputSchema = z.object({
   taskStatuses: z.array(TaskStatusSchema),
 })
@@ -48,6 +56,26 @@ const CategoriesOutputSchema = z.object({
 
 const ProjectsOutputSchema = z.object({
   projects: z.array(ProjectSchema),
+})
+
+const profilesInputSchema = z.object({
+  activeOnly: z.boolean().default(true),
+  limit: z.number().int().min(1).max(50).default(20),
+})
+
+const searchProfilesInputSchema = profilesInputSchema.extend({
+  query: z.string().trim().min(1).max(120),
+})
+
+const ProfilesOutputSchema = z.object({
+  profiles: z.array(ProfileSchema),
+  count: z.number(),
+  limit: z.number(),
+  activeOnly: z.boolean(),
+})
+
+const SearchProfilesOutputSchema = ProfilesOutputSchema.extend({
+  query: z.string(),
 })
 
 export const registerReferenceDataTools = (server: McpServer, config: GtiMcpConfig) => {
@@ -125,6 +153,106 @@ export const registerReferenceDataTools = (server: McpServer, config: GtiMcpConf
       if (error) throw error
 
       return toToolResult({ projects: data ?? [] })
+    },
+  )
+
+  server.registerTool(
+    'gti_list_profiles',
+    {
+      title: 'List GTI profiles',
+      description: 'Lists GTI user profiles for assigning tasks, active profiles only by default.',
+      inputSchema: profilesInputSchema,
+      outputSchema: ProfilesOutputSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+      },
+    },
+    async ({ activeOnly, limit }) => {
+      const supabase = requireGtiSupabaseClient(config)
+      let query = supabase
+        .from('profiles')
+        .select('id, full_name, email, role, active')
+        .order('full_name', { ascending: true })
+        .order('email', { ascending: true })
+        .limit(limit)
+
+      if (activeOnly) query = query.eq('active', true)
+
+      const { data, error } = await query
+      if (error) throw error
+
+      const profiles = data ?? []
+      return toToolResult({
+        profiles,
+        count: profiles.length,
+        limit,
+        activeOnly,
+      })
+    },
+  )
+
+  server.registerTool(
+    'gti_search_profiles',
+    {
+      title: 'Search GTI profiles',
+      description: 'Searches GTI user profiles by full name or email for resolving assignee IDs.',
+      inputSchema: searchProfilesInputSchema,
+      outputSchema: SearchProfilesOutputSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+      },
+    },
+    async ({ query: searchText, activeOnly, limit }) => {
+      const supabase = requireGtiSupabaseClient(config)
+
+      let nameQuery = supabase
+        .from('profiles')
+        .select('id, full_name, email, role, active')
+        .ilike('full_name', `%${searchText}%`)
+        .order('full_name', { ascending: true })
+        .order('email', { ascending: true })
+        .limit(limit)
+
+      let emailQuery = supabase
+        .from('profiles')
+        .select('id, full_name, email, role, active')
+        .ilike('email', `%${searchText}%`)
+        .order('full_name', { ascending: true })
+        .order('email', { ascending: true })
+        .limit(limit)
+
+      if (activeOnly) {
+        nameQuery = nameQuery.eq('active', true)
+        emailQuery = emailQuery.eq('active', true)
+      }
+
+      const [{ data: nameData, error: nameError }, { data: emailData, error: emailError }] =
+        await Promise.all([nameQuery, emailQuery])
+
+      if (nameError) throw nameError
+      if (emailError) throw emailError
+
+      const profilesById = new Map(
+        [...(nameData ?? []), ...(emailData ?? [])].map((profile) => [profile.id, profile]),
+      )
+      const profiles = Array.from(profilesById.values())
+        .sort((a, b) => {
+          const byName = (a.full_name ?? '').localeCompare(b.full_name ?? '', 'pt-BR')
+          if (byName !== 0) return byName
+          return a.email.localeCompare(b.email, 'pt-BR')
+        })
+        .slice(0, limit)
+      return toToolResult({
+        profiles,
+        count: profiles.length,
+        limit,
+        activeOnly,
+        query: searchText,
+      })
     },
   )
 }

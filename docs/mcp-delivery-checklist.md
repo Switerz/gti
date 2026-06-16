@@ -37,7 +37,7 @@ npm run mcp:check
 ```json
 {
   "ok": true,
-  "tools": 17,
+  "tools": 19,
   "resources": 2
 }
 ```
@@ -59,6 +59,8 @@ Para uso completo com banco:
 - `gti_list_task_statuses`
 - `gti_list_categories`
 - `gti_list_projects`
+- `gti_list_profiles`
+- `gti_search_profiles`
 - `gti_list_tasks`
 - `gti_search_tasks`
 - `gti_get_task`
@@ -76,6 +78,8 @@ Para uso completo com banco:
 
 - Escritas operam em uma entidade por chamada.
 - Tarefas arquivadas ficam fora das listas por padrao.
+- Perfis inativos ficam fora de `gti_list_profiles` e `gti_search_profiles` por padrao.
+- Atribuicoes devem usar IDs reais retornados por `gti_list_profiles` ou `gti_search_profiles`.
 - Mover para status final exige `confirmFinalize=true`.
 - Trocar responsavel principal exige `confirmOwnerChange=true`.
 - Criar tarefa para outra pessoa ou com assignees exige `confirmAssignedToOther=true`.
@@ -95,10 +99,12 @@ Para uso completo com banco:
 1. Rodar `npm run mcp:check`.
 2. Chamar `gti_healthcheck`.
 3. Chamar `gti_list_task_statuses`.
-4. Chamar `gti_list_tasks` com `limit: 5`.
-5. Criar ou escolher uma tarefa de teste.
-6. Chamar `gti_add_checklist_item`.
-7. Chamar `gti_add_comment`.
-8. Chamar `gti_archive_task` somente em tarefa de teste, com `confirmArchive=true`.
-9. Conferir a tarefa no GTI.
-10. Conferir `logs/mcp-audit.jsonl`.
+4. Chamar `gti_list_profiles` com `limit: 5`.
+5. Chamar `gti_search_profiles` por nome ou email conhecido.
+6. Chamar `gti_list_tasks` com `limit: 5`.
+7. Criar ou escolher uma tarefa de teste.
+8. Chamar `gti_add_checklist_item`.
+9. Chamar `gti_add_comment`.
+10. Chamar `gti_archive_task` somente em tarefa de teste, com `confirmArchive=true`.
+11. Conferir a tarefa no GTI.
+12. Conferir `logs/mcp-audit.jsonl`.
