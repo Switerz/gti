@@ -16,6 +16,12 @@ Rode o smoke test:
 npm run mcp:smoke
 ```
 
+Para validar permissoes por papel quando houver tokens de teste:
+
+```powershell
+npm run mcp:permissions
+```
+
 O smoke test valida:
 - servidor inicia via stdio
 - ferramentas registradas
@@ -235,3 +241,4 @@ Solucao:
 ## Guardrails
 
 Consulte `docs/mcp-permissions.md` para permissoes, limites e auditoria.
+Consulte `docs/mcp-permission-matrix.md` para a matriz de validacao por `member`, `lead` e `admin`.

@@ -9,6 +9,7 @@ Comandos recomendados antes de usar em fluxo real:
 ```powershell
 npm run mcp:build
 npm run mcp:smoke
+npm run mcp:permissions
 npm run test
 npm run lint
 npm run build
@@ -28,6 +29,7 @@ npm run mcp:check
 - `VITE_SUPABASE_URL` ou `SUPABASE_URL` esta configurado.
 - `VITE_SUPABASE_ANON_KEY` ou `SUPABASE_ANON_KEY` esta configurado.
 - `GTI_MCP_USER_ACCESS_TOKEN` esta configurado quando leituras/escritas reais forem testadas.
+- `GTI_MCP_MEMBER_ACCESS_TOKEN`, `GTI_MCP_LEAD_ACCESS_TOKEN` e `GTI_MCP_ADMIN_ACCESS_TOKEN` so sao necessarios para a matriz de permissoes.
 - `SUPABASE_ACCESS_TOKEN` so e necessario para o MCP oficial do Supabase.
 
 ## Smoke Test Esperado

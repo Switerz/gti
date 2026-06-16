@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "mcp:build": "tsc -p tsconfig.mcp.json",
     "mcp:check": "npm run mcp:build && npm run mcp:smoke",
+    "mcp:permissions": "node scripts/mcp-permission-matrix.mjs",
     "mcp:smoke": "node scripts/mcp-smoke.mjs",
     "mcp:start": "node mcp/dist/server.js",
     "preview": "vite preview",

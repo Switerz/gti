@@ -604,7 +604,7 @@ Resultado:
 
 ## Sprint MCP 17 - Testes de Permissao por Papel
 
-Status: pendente
+Status: preparada localmente; validacao real pendente
 
 Objetivo: validar comportamento real com `member`, `lead` e `admin`.
 
@@ -620,6 +620,15 @@ Entregas:
 Validacao:
 - Registrar casos esperados e observados.
 - Ajustar tools ou RLS se houver divergencia.
+
+Resultado:
+- Criado script `npm run mcp:permissions`.
+- Script carrega `.env` local e aceita tokens `GTI_MCP_MEMBER_ACCESS_TOKEN`, `GTI_MCP_LEAD_ACCESS_TOKEN` e `GTI_MCP_ADMIN_ACCESS_TOKEN`.
+- Validacao padrao e somente leitura.
+- Escritas reais exigem `GTI_MCP_PERMISSION_TEST_WRITES=true`.
+- Criado `docs/mcp-permission-matrix.md` com comandos, cobertura e matriz esperada.
+- `.env.example` atualizado com variaveis opcionais da matriz.
+- Validacao real por papel ainda depende de tokens validos para `member`, `lead` e `admin`.
 
 ## Sprint MCP 18 - Entrega e Commit
 
