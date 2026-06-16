@@ -632,7 +632,7 @@ Resultado:
 
 ## Sprint MCP 18 - Entrega e Commit
 
-Status: pendente
+Status: concluida localmente
 
 Objetivo: preparar a entrega versionada do MCP.
 
@@ -651,6 +651,19 @@ Entregas:
 Validacao:
 - `git status` limpo exceto arquivos ignorados locais.
 - Nenhum token real em arquivos versionados.
+
+Resultado:
+- Arquivos alterados revisados.
+- `.env`, `.mcp.json`, `logs/`, `dist/`, `mcp/dist/` e `.vercel/` confirmados como ignorados.
+- `Indicadores Transportes.xlsx` tratado como artefato local ignorado, sem versionar o arquivo.
+- Validacao completa executada:
+  - `npm run mcp:check`
+  - `npm run mcp:permissions`
+  - `npm run test`
+  - `npm run lint`
+  - `npm run build`
+- Busca local por padroes de tokens nao encontrou segredos reais versionados; achados restantes sao placeholders, mocks ou codigo de runtime.
+- Commits das sprints finais preparados para envio em `main`.
 
 ## Riscos Conhecidos
 

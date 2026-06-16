@@ -21,6 +21,7 @@ dist-ssr
 .env.local
 .env.*.local
 .mcp.json
+Indicadores Transportes.xlsx
 
 # Editor directories and files
 .vscode/*
