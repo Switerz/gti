@@ -1,10 +1,44 @@
 # MCP GTI - Integracao com Codex e Claude
 
-Este guia mostra como conectar o MCP de dominio do GTI em clientes MCP locais.
+Este guia mostra como conectar o MCP de dominio do GTI em clientes MCP remotos e locais.
 
 Manual visual em HTML, com passo a passo para Claude/Codex, exemplos de prompts e troubleshooting: `docs/mcp-manual.html`.
 
+## Modo recomendado para usuarios finais
+
+Usuarios finais nao precisam clonar o repositorio, instalar dependencias, compilar o MCP ou editar `.env` do projeto. O fluxo recomendado e usar o endpoint remoto:
+
+```txt
+https://go-gti.vercel.app/api/mcp
+```
+
+A aba `Configuracoes > MCP` mostra a URL remota e copia snippets prontos para clientes com suporte a MCP HTTP.
+
+Autenticacao:
+- o cliente deve enviar `Authorization: Bearer <access_token_do_usuario>`;
+- o token vem da sessao atual do GTI;
+- o token expira e deve ser atualizado pela tela do GTI;
+- nao use `refresh_token`.
+
+Codex remoto:
+
+```toml
+[mcp_servers.gti]
+url = "https://go-gti.vercel.app/api/mcp"
+http_headers = { Authorization = "Bearer access_token_do_usuario" }
+```
+
+Claude Code remoto:
+
+```powershell
+claude mcp add --transport http gti "https://go-gti.vercel.app/api/mcp" --header "Authorization: Bearer access_token_do_usuario"
+```
+
+Observacao: este MVP usa Bearer token curto. OAuth/PKCE com revogacao dedicada e a evolucao recomendada para reduzir ainda mais friccao e evitar tokens em configuracoes locais.
+
 ## Pre-requisitos
+
+Os pre-requisitos abaixo sao apenas para desenvolvimento local do MCP.
 
 Compile o servidor:
 

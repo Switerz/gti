@@ -144,34 +144,39 @@ function getTokenState(expiresAt?: number) {
 
 function McpIntegrationCard() {
   const { data: session, refetch, isFetching } = useSession()
-  const [copied, setCopied] = useState<'token' | 'env' | 'json' | 'smoke' | null>(null)
+  const [copied, setCopied] = useState<'url' | 'token' | 'codex' | 'claude' | 'local' | null>(null)
   const accessToken = session?.access_token
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
   const tokenState = getTokenState(session?.expires_at)
   const isReady = Boolean(accessToken && supabaseUrl && supabaseAnonKey && !tokenState.expired)
-  const smokeCommand = 'npm run mcp:smoke'
+  const remoteMcpUrl =
+    typeof window === 'undefined' ? 'https://go-gti.vercel.app/api/mcp' : `${window.location.origin}/api/mcp`
 
   async function refreshSession() {
     await supabase.auth.refreshSession()
     await refetch()
   }
 
-  async function copyText(kind: 'token' | 'env' | 'json' | 'smoke', text: string) {
+  async function copyText(kind: 'url' | 'token' | 'codex' | 'claude' | 'local', text: string) {
     await navigator.clipboard.writeText(text)
     setCopied(kind)
     window.setTimeout(() => setCopied(null), 1800)
   }
 
-  const envSnippet = isReady
+  const codexSnippet = isReady
     ? [
-        `VITE_SUPABASE_URL=${supabaseUrl}`,
-        `VITE_SUPABASE_ANON_KEY=${supabaseAnonKey}`,
-        `GTI_MCP_USER_ACCESS_TOKEN=${accessToken}`,
+        '[mcp_servers.gti]',
+        `url = "${remoteMcpUrl}"`,
+        `http_headers = { Authorization = "Bearer ${accessToken}" }`,
       ].join('\n')
     : ''
 
-  const mcpJsonSnippet = isReady
+  const claudeCommand = isReady
+    ? `claude mcp add --transport http gti "${remoteMcpUrl}" --header "Authorization: Bearer ${accessToken}"`
+    : ''
+
+  const localDevSnippet = isReady
     ? JSON.stringify(
         {
           mcpServers: {
@@ -198,7 +203,7 @@ function McpIntegrationCard() {
           <Plug className="h-4 w-4" />
           MCP
         </CardTitle>
-        <CardDescription>Integração local para Codex e Claude usando sua sessão atual.</CardDescription>
+        <CardDescription>Conector remoto para Codex e Claude usando sua sessão atual.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="rounded-lg border bg-muted/20 p-4">
@@ -229,7 +234,19 @@ function McpIntegrationCard() {
           </div>
         )}
 
-        <div className="grid gap-2 sm:grid-cols-4">
+        <div className="rounded-lg border bg-muted/20 p-3">
+          <p className="break-all text-xs text-muted-foreground">{remoteMcpUrl}</p>
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => copyText('url', remoteMcpUrl)}
+          >
+            {copied === 'url' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+            URL remota
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -243,32 +260,33 @@ function McpIntegrationCard() {
             variant="outline"
             size="sm"
             disabled={!isReady}
-            onClick={() => copyText('env', envSnippet)}
+            onClick={() => copyText('codex', codexSnippet)}
           >
-            {copied === 'env' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
-            .env
+            {copied === 'codex' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+            Codex
           </Button>
           <Button
             variant="outline"
             size="sm"
             disabled={!isReady}
-            onClick={() => copyText('json', mcpJsonSnippet)}
+            onClick={() => copyText('claude', claudeCommand)}
           >
-            {copied === 'json' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
-            .mcp.json
+            {copied === 'claude' ? <Check className="h-4 w-4" /> : <Terminal className="h-4 w-4" />}
+            Claude Code
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => copyText('smoke', smokeCommand)}
+            disabled={!isReady}
+            onClick={() => copyText('local', localDevSnippet)}
           >
-            {copied === 'smoke' ? <Check className="h-4 w-4" /> : <Terminal className="h-4 w-4" />}
-            smoke
+            {copied === 'local' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+            local dev
           </Button>
         </div>
 
         <p className="text-xs text-muted-foreground">
-          O token permite operar como seu usuário até expirar. Não copie refresh token.
+          Use a URL remota em clientes MCP com suporte a HTTP. O token permite operar como seu usuário até expirar; não envie em conversas públicas e nunca copie refresh token.
         </p>
       </CardContent>
     </Card>

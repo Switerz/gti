@@ -103,6 +103,14 @@ Detalhes completos estao em `docs/mcp-permissions.md`.
 
 ## Integracao
 
+Endpoint remoto para usuarios finais:
+
+```txt
+https://go-gti.vercel.app/api/mcp
+```
+
+Clientes MCP HTTP devem enviar `Authorization: Bearer <access_token_do_usuario>`.
+
 Guia para Codex, Claude Desktop e prompts de teste:
 
 ```txt

@@ -252,6 +252,7 @@
       <nav>
         <a href="#visao-geral">Visao geral</a>
         <a href="#desktop">Desktop ou agente?</a>
+        <a href="#remoto">Conexao remota</a>
         <a href="#pre-requisitos">Pre-requisitos</a>
         <a href="#token">Token de sessao</a>
         <a href="#claude">Claude Desktop</a>
@@ -273,14 +274,14 @@
         <span class="pill">GTI</span>
         <span class="pill">Claude Desktop</span>
         <span class="pill">Codex CLI / IDE</span>
-        <span class="pill">MCP stdio</span>
+        <span class="pill">MCP HTTP remoto</span>
       </section>
 
       <section id="desktop">
         <h2>Ele serve para desktop ou precisa ser agente de codigo?</h2>
         <div class="callout">
           <p>
-            O MCP do GTI foi implementado como um servidor MCP <strong>stdio</strong>. Isso quer dizer que ele e um conector MCP normal: qualquer cliente MCP que suporte iniciar um processo local consegue usar, desde que tenha Node, caminho correto do projeto e variaveis de ambiente.
+            O MCP do GTI agora tem dois modos: <strong>HTTP remoto</strong> para usuarios finais e <strong>stdio local</strong> para desenvolvimento. O modo recomendado para usuarios comuns e o remoto, porque nao exige repositorio, Node, build nem arquivo `.env`.
           </p>
         </div>
 
@@ -296,33 +297,63 @@
             <tr>
               <td>Claude Desktop</td>
               <td><span class="ok">Sim</span></td>
-              <td>Use o JSON de MCP Desktop com caminho absoluto para `mcp/dist/server.js` e variaveis de ambiente.</td>
+              <td>Use a URL remota quando o cliente suportar MCP HTTP. O modo local continua disponivel para desenvolvimento.</td>
             </tr>
             <tr>
               <td>Codex CLI</td>
               <td><span class="ok">Sim</span></td>
-              <td>O manual do Codex documenta suporte a MCP stdio na CLI via `config.toml` ou `codex mcp add`.</td>
+              <td>Use `config.toml` com `url` e header Authorization para o endpoint remoto.</td>
             </tr>
             <tr>
               <td>Codex IDE extension</td>
               <td><span class="ok">Sim</span></td>
-              <td>O manual do Codex documenta que CLI e extensao IDE compartilham configuracao MCP.</td>
+              <td>CLI e extensao IDE compartilham configuracao MCP; o endpoint remoto evita setup local.</td>
             </tr>
             <tr>
               <td>Codex desktop app</td>
               <td><span class="warn">Depende do suporte MCP disponivel na sua versao</span></td>
-              <td>O app tem status/comandos de MCP no manual, mas a configuracao de MCP local e documentada com garantia para CLI e IDE. Se o app mostrar `/mcp` e ler o mesmo `config.toml`, deve aparecer ali.</td>
+              <td>Depende do suporte a MCP HTTP/remote da versao instalada. Se o app aceitar URL MCP e bearer token, use o endpoint remoto.</td>
             </tr>
           </tbody>
         </table>
 
         <p>
-          Em outras palavras: ele nao precisa ser usado apenas dentro de um agente de codigo. Ele e um MCP local normal. A diferenca e que algumas ferramentas fazem mais sentido em agentes que sabem raciocinar sobre tarefas, IDs, confirmacoes e consequencias.
+          Em outras palavras: ele nao precisa ser usado apenas dentro de um agente de codigo. O ideal de produto e usa-lo como conector MCP remoto normal, autenticado como o usuario logado no GTI.
         </p>
       </section>
 
+      <section id="remoto">
+        <h2>Conexao remota recomendada</h2>
+        <p>
+          Para usuarios finais, use este endpoint:
+        </p>
+
+        <pre><code>https://go-gti.vercel.app/api/mcp</code></pre>
+
+        <p>
+          O cliente MCP deve enviar `Authorization: Bearer ACCESS_TOKEN_COPIADO_DA_UI`. Esse token e curto e representa o usuario logado, entao o Supabase continua aplicando RLS.
+        </p>
+
+        <h3>Codex remoto</h3>
+        <pre><code>[mcp_servers.gti]
+url = "https://go-gti.vercel.app/api/mcp"
+http_headers = { Authorization = "Bearer ACCESS_TOKEN_COPIADO_DA_UI" }</code></pre>
+
+        <h3>Claude Code remoto</h3>
+        <pre><code>claude mcp add --transport http gti "https://go-gti.vercel.app/api/mcp" --header "Authorization: Bearer ACCESS_TOKEN_COPIADO_DA_UI"</code></pre>
+
+        <div class="callout warning">
+          <p>
+            Este e o MVP remoto com Bearer token curto. A evolucao ideal e OAuth/PKCE, para que o cliente abra login GTI e armazene credenciais sem o usuario copiar token.
+          </p>
+        </div>
+      </section>
+
       <section id="pre-requisitos">
-        <h2>Pre-requisitos</h2>
+        <h2>Pre-requisitos locais</h2>
+        <p>
+          Esta secao e apenas para desenvolvimento local do MCP.
+        </p>
         <ol>
           <li>Repositorio GTI clonado em `C:\Users\Notebook\Desktop\gti`.</li>
           <li>Node instalado.</li>
@@ -353,11 +384,11 @@ npm run mcp:smoke</code></pre>
         <ol>
           <li>Abra `https://go-gti.vercel.app/settings`.</li>
           <li>No card MCP, clique em `Atualizar sessao`.</li>
-          <li>Copie `Token`, `.env` ou `.mcp.json`.</li>
+          <li>Copie `URL remota`, `Codex`, `Claude Code` ou `Token`.</li>
           <li>Se o card avisar token expirado/perto de expirar, atualize antes de copiar.</li>
         </ol>
 
-        <h3>.env local recomendado</h3>
+        <h3>.env local recomendado para desenvolvimento</h3>
         <pre><code>VITE_SUPABASE_URL=https://SEU_PROJETO.supabase.co
 VITE_SUPABASE_ANON_KEY=SUA_ANON_KEY
 GTI_MCP_USER_ACCESS_TOKEN=ACCESS_TOKEN_COPIADO_DA_UI</code></pre>

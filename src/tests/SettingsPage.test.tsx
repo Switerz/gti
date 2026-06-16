@@ -74,14 +74,15 @@ describe('SettingsPage MCP card', () => {
     }
   })
 
-  it('copies the MCP env snippet using the current session token', async () => {
+  it('copies the remote Codex config using the current session token', async () => {
     render(<SettingsPage />)
 
-    await userEvent.click(screen.getByRole('button', { name: /\.env/i }))
+    await userEvent.click(screen.getByRole('button', { name: /codex/i }))
 
     expect(mocks.writeText).toHaveBeenCalledWith(
-      expect.stringContaining('GTI_MCP_USER_ACCESS_TOKEN=mock-access-token'),
+      expect.stringContaining('http_headers = { Authorization = "Bearer mock-access-token" }'),
     )
+    expect(mocks.writeText).toHaveBeenCalledWith(expect.stringContaining('/api/mcp'))
   })
 
   it('refreshes the current session', async () => {
@@ -93,12 +94,21 @@ describe('SettingsPage MCP card', () => {
     expect(mocks.refetch).toHaveBeenCalled()
   })
 
-  it('copies the MCP smoke command', async () => {
+  it('copies the Claude Code remote command', async () => {
     render(<SettingsPage />)
 
-    await userEvent.click(screen.getByRole('button', { name: /smoke/i }))
+    await userEvent.click(screen.getByRole('button', { name: /claude code/i }))
 
-    expect(mocks.writeText).toHaveBeenCalledWith('npm run mcp:smoke')
+    expect(mocks.writeText).toHaveBeenCalledWith(expect.stringContaining('claude mcp add --transport http gti'))
+    expect(mocks.writeText).toHaveBeenCalledWith(expect.stringContaining('Authorization: Bearer mock-access-token'))
+  })
+
+  it('copies the remote MCP URL', async () => {
+    render(<SettingsPage />)
+
+    await userEvent.click(screen.getByRole('button', { name: /url remota/i }))
+
+    expect(mocks.writeText).toHaveBeenCalledWith(expect.stringContaining('/api/mcp'))
   })
 
   it('warns when the session token is expired', () => {

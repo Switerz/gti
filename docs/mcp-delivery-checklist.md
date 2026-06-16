@@ -32,6 +32,14 @@ npm run mcp:check
 - `GTI_MCP_MEMBER_ACCESS_TOKEN`, `GTI_MCP_LEAD_ACCESS_TOKEN` e `GTI_MCP_ADMIN_ACCESS_TOKEN` so sao necessarios para a matriz de permissoes.
 - `SUPABASE_ACCESS_TOKEN` so e necessario para o MCP oficial do Supabase.
 
+## Configuracao Remota
+
+- Endpoint de produto: `https://go-gti.vercel.app/api/mcp`.
+- Clientes MCP HTTP enviam `Authorization: Bearer <access_token_do_usuario>`.
+- A aba `Configuracoes > MCP` copia URL remota, snippet Codex e comando Claude Code.
+- O modo local fica reservado para desenvolvimento e troubleshooting.
+- OAuth/PKCE continua como evolucao recomendada para reduzir copia manual de token.
+
 ## Smoke Test Esperado
 
 `npm run mcp:smoke` deve retornar:

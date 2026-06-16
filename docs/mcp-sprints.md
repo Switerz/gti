@@ -665,9 +665,38 @@ Resultado:
 - Busca local por padroes de tokens nao encontrou segredos reais versionados; achados restantes sao placeholders, mocks ou codigo de runtime.
 - Commits das sprints finais preparados para envio em `main`.
 
+## Sprint MCP 19 - Remote MCP para Usuarios Finais
+
+Status: concluida localmente
+
+Objetivo: transformar o MCP de fluxo desenvolvedor/local em um conector remoto utilizavel por usuarios finais sem acesso ao repositorio.
+
+Entregas:
+- Criar endpoint HTTP remoto `/api/mcp` em Vercel.
+- Reaproveitar as mesmas ferramentas do MCP stdio sem duplicar logica.
+- Autenticar chamadas remotas com `Authorization: Bearer <access_token_do_usuario>`.
+- Manter RLS do Supabase como autorizacao principal via token do usuario.
+- Atualizar aba `Configuracoes > MCP` para priorizar URL remota, Codex HTTP e Claude Code HTTP.
+- Manter snippet local apenas como modo desenvolvedor.
+- Documentar diferenca entre modo remoto de produto e modo local de desenvolvimento.
+
+Validacao:
+- `npm run mcp:build`
+- `npm run test -- src/tests/SettingsPage.test.tsx`
+- `npm run build`
+- `npm run mcp:smoke`
+
+Resultado:
+- Adicionado `api/mcp.ts` com transporte MCP Streamable HTTP stateless.
+- Adicionado `mcp/src/create-server.ts` para compartilhar registro de tools entre stdio e HTTP.
+- `mcp/src/server.ts` passou a usar a factory compartilhada.
+- `vercel.json` passou a preservar `/api/*` fora do rewrite do SPA.
+- Tela de MCP passou a copiar URL remota, config Codex HTTP e comando Claude Code HTTP.
+- OAuth/PKCE ficou registrado como proxima evolucao; esta sprint entrega Bearer token curto.
+
 ## Riscos Conhecidos
 
-- Token Supabase em arquivo local/versionado precisa ser tratado antes de uso amplo.
+- Bearer token em configuracao local e aceitavel para MVP curto, mas OAuth/PKCE com revogacao dedicada e melhor para uso amplo.
 - Escritas via MCP podem confundir autoria se o usuario MCP nao estiver bem definido.
 - Usar credencial muito privilegiada pode burlar RLS e criar risco desnecessario.
 - Ferramentas amplas demais aumentam chance de alteracoes acidentais.
