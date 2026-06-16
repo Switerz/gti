@@ -7,6 +7,10 @@ import { SettingsPage } from '@/pages/SettingsPage'
 const mocks = vi.hoisted(() => ({
   refetch: vi.fn(),
   refreshSession: vi.fn(),
+  session: {
+    access_token: 'mock-access-token',
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+  } as { access_token: string; expires_at: number },
   writeText: vi.fn(),
 }))
 
@@ -27,10 +31,7 @@ vi.mock('@/hooks/useCurrentProfile', () => ({
 
 vi.mock('@/hooks/useSession', () => ({
   useSession: () => ({
-    data: {
-      access_token: 'mock-access-token',
-      expires_at: 1781536077,
-    },
+    data: mocks.session,
     refetch: mocks.refetch,
     isFetching: false,
   }),
@@ -67,6 +68,10 @@ Object.assign(navigator, {
 describe('SettingsPage MCP card', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.session = {
+      access_token: 'mock-access-token',
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+    }
   })
 
   it('copies the MCP env snippet using the current session token', async () => {
@@ -86,5 +91,26 @@ describe('SettingsPage MCP card', () => {
 
     expect(mocks.refreshSession).toHaveBeenCalled()
     expect(mocks.refetch).toHaveBeenCalled()
+  })
+
+  it('copies the MCP smoke command', async () => {
+    render(<SettingsPage />)
+
+    await userEvent.click(screen.getByRole('button', { name: /smoke/i }))
+
+    expect(mocks.writeText).toHaveBeenCalledWith('npm run mcp:smoke')
+  })
+
+  it('warns when the session token is expired', () => {
+    mocks.session = {
+      access_token: 'expired-token',
+      expires_at: Math.floor(Date.now() / 1000) - 60,
+    }
+
+    render(<SettingsPage />)
+
+    expect(screen.getByText(/sessão expirada/i)).toBeInTheDocument()
+    expect(screen.getByText(/atualize a sessão antes de copiar/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /token/i })).toBeDisabled()
   })
 })

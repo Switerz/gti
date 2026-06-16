@@ -73,6 +73,9 @@ Fluxo recomendado:
 4. Reinicie o cliente MCP se ele ja estava aberto.
 5. Peca ao agente para chamar `gti_healthcheck`.
 
+A aba `Configuracoes > MCP` mostra quando o token esta expirado ou perto de expirar.
+Atualize a sessao antes de copiar snippets para fluxos longos.
+
 ## Claude Desktop
 
 Use caminho absoluto para evitar problemas de diretório de trabalho. Exemplo:
@@ -206,6 +209,14 @@ Solucao:
 - copie o `access_token` de uma sessao logada no GTI
 - adicione em `.env`
 - reinicie o cliente MCP
+
+Erro: `token is expired`
+
+Solucao:
+- abra `Configuracoes > MCP`
+- clique em `Atualizar sessão`
+- copie novamente o token ou snippet `.env`
+- rode `npm run mcp:smoke`
 
 Erro: `Authenticated GTI user not found`
 

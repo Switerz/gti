@@ -92,6 +92,7 @@ Para uso completo com banco:
 - Resumos operacionais excluem arquivadas e limitam listas de tarefas por `topN`.
 - Sugestoes de proximas acoes sao somente leitura e citam IDs reais de tarefas.
 - Ferramentas de KPIs e OKRs da Sprint 15 sao somente leitura.
+- Aba MCP deve avisar token expirado/perto de expirar antes de copiar snippets.
 - Mover para status final exige `confirmFinalize=true`.
 - Trocar responsavel principal exige `confirmOwnerChange=true`.
 - Criar tarefa para outra pessoa ou com assignees exige `confirmAssignedToOther=true`.

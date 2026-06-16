@@ -578,7 +578,7 @@ Resultado:
 
 ## Sprint MCP 16 - Hardening de Autenticacao e Token
 
-Status: pendente
+Status: concluida localmente
 
 Objetivo: reduzir dependencia de copiar `access_token` manualmente.
 
@@ -593,6 +593,14 @@ Cuidados:
 - Token proprio do GTI nao vira automaticamente `auth.uid()` no Supabase.
 - Qualquer token revogavel precisa preservar autorizacao equivalente ao usuario.
 - Nao usar `service_role` para burlar RLS sem uma camada de autorizacao forte.
+
+Resultado:
+- Aba MCP passou a mostrar estado de expiração do token.
+- Aba MCP avisa quando o token esta expirado ou perto de expirar.
+- Copia de token fica bloqueada quando a sessao esta expirada.
+- Adicionado botao para copiar `npm run mcp:smoke`.
+- Fluxo de troubleshooting documentado para `token is expired`.
+- Edge Function e tabela de tokens pessoais ficaram como avaliacao futura, sem implementacao nesta sprint.
 
 ## Sprint MCP 17 - Testes de Permissao por Papel
 

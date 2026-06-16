@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Check, Clipboard, KeyRound, Pencil, Plug, ShieldAlert, Tag, Trash2, UserCog } from 'lucide-react'
+import { AlertTriangle, Check, Clipboard, KeyRound, Pencil, Plug, ShieldAlert, Tag, Terminal, Trash2, UserCog } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -119,20 +119,45 @@ function formatExpiresAt(expiresAt?: number) {
   }).format(new Date(expiresAt * 1000))
 }
 
+function getTokenState(expiresAt?: number) {
+  if (!expiresAt) return { label: 'Expiração indisponível', expired: false, expiringSoon: false }
+
+  const millisecondsLeft = expiresAt * 1000 - Date.now()
+  if (millisecondsLeft <= 0) return { label: 'Token expirado', expired: true, expiringSoon: false }
+
+  const minutesLeft = Math.floor(millisecondsLeft / 60_000)
+  if (minutesLeft <= 15) {
+    return {
+      label: `Expira em ${Math.max(minutesLeft, 1)} min`,
+      expired: false,
+      expiringSoon: true,
+    }
+  }
+
+  const hoursLeft = Math.floor(minutesLeft / 60)
+  return {
+    label: hoursLeft > 0 ? `Expira em ${hoursLeft}h ${minutesLeft % 60}min` : `Expira em ${minutesLeft} min`,
+    expired: false,
+    expiringSoon: false,
+  }
+}
+
 function McpIntegrationCard() {
   const { data: session, refetch, isFetching } = useSession()
-  const [copied, setCopied] = useState<'token' | 'env' | 'json' | null>(null)
+  const [copied, setCopied] = useState<'token' | 'env' | 'json' | 'smoke' | null>(null)
   const accessToken = session?.access_token
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
-  const isReady = Boolean(accessToken && supabaseUrl && supabaseAnonKey)
+  const tokenState = getTokenState(session?.expires_at)
+  const isReady = Boolean(accessToken && supabaseUrl && supabaseAnonKey && !tokenState.expired)
+  const smokeCommand = 'npm run mcp:smoke'
 
   async function refreshSession() {
     await supabase.auth.refreshSession()
     await refetch()
   }
 
-  async function copyText(kind: 'token' | 'env' | 'json', text: string) {
+  async function copyText(kind: 'token' | 'env' | 'json' | 'smoke', text: string) {
     await navigator.clipboard.writeText(text)
     setCopied(kind)
     window.setTimeout(() => setCopied(null), 1800)
@@ -181,10 +206,10 @@ function McpIntegrationCard() {
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <KeyRound className="h-4 w-4 text-muted-foreground" />
-                {isReady ? 'Sessão pronta' : 'Sessão indisponível'}
+                {isReady ? 'Sessão pronta' : tokenState.expired ? 'Sessão expirada' : 'Sessão indisponível'}
               </div>
               <p className="text-xs text-muted-foreground">
-                Expiração: {formatExpiresAt(session?.expires_at)}
+                Expiração: {formatExpiresAt(session?.expires_at)} · {tokenState.label}
               </p>
             </div>
             <Button size="sm" variant="outline" onClick={refreshSession} disabled={isFetching}>
@@ -193,11 +218,22 @@ function McpIntegrationCard() {
           </div>
         </div>
 
-        <div className="grid gap-2 sm:grid-cols-3">
+        {(tokenState.expired || tokenState.expiringSoon) && (
+          <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>
+              {tokenState.expired
+                ? 'Atualize a sessão antes de copiar o token para o MCP.'
+                : 'O token está perto de expirar. Atualize a sessão antes de iniciar um fluxo longo.'}
+            </p>
+          </div>
+        )}
+
+        <div className="grid gap-2 sm:grid-cols-4">
           <Button
             variant="outline"
             size="sm"
-            disabled={!accessToken}
+            disabled={!accessToken || tokenState.expired}
             onClick={() => accessToken && copyText('token', accessToken)}
           >
             {copied === 'token' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
@@ -220,6 +256,14 @@ function McpIntegrationCard() {
           >
             {copied === 'json' ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
             .mcp.json
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => copyText('smoke', smokeCommand)}
+          >
+            {copied === 'smoke' ? <Check className="h-4 w-4" /> : <Terminal className="h-4 w-4" />}
+            smoke
           </Button>
         </div>
 
