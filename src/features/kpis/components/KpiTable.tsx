@@ -152,7 +152,11 @@ function KpiGroupRows({
               <KpiMeta kpi={kpi} />
             </td>
             <td className="px-3 py-3">
-              <KpiTrendSparkline points={trendPoints} />
+              <KpiTrendSparkline
+                points={trendPoints}
+                targetValue={kpi.target_value}
+                targetOperator={kpi.target_operator as KpiTargetOperator}
+              />
             </td>
             <td className="px-3 py-3 text-right">
               <Button
@@ -233,7 +237,11 @@ function KpiMobileCard({
             onSave={(values) => onSaveWeeklyValue?.(kpi, currentWeek, values)}
           />
         </div>
-        <KpiTrendSparkline points={trendPoints} />
+        <KpiTrendSparkline
+          points={trendPoints}
+          targetValue={kpi.target_value}
+          targetOperator={kpi.target_operator as KpiTargetOperator}
+        />
       </div>
 
       <div className="mt-3 flex items-center justify-between border-t pt-2 text-xs">
