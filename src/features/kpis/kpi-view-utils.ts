@@ -80,12 +80,20 @@ export function getKpiOperationalWeek(kpis: KpiWithRelations[], calendarWeek: Is
     }
   }
 
+  // Never advance past today: if a KPI already has data in the current week,
+  // nextWeekAfterLatestValue would be week+1 (the future), making every KPI
+  // appear as "missing" even though values exist for the current week.
+  const ceiling = compareWeeks(calendarWeek, KPI_MIN_CURRENT_WEEK) > 0
+    ? calendarWeek
+    : KPI_MIN_CURRENT_WEEK
+
   if (!latestWeek) {
-    return compareWeeks(KPI_MIN_CURRENT_WEEK, calendarWeek) > 0 ? KPI_MIN_CURRENT_WEEK : calendarWeek
+    return ceiling
   }
 
   const nextWeekAfterLatestValue = addWeeks(latestWeek, 1)
-  return [calendarWeek, nextWeekAfterLatestValue, KPI_MIN_CURRENT_WEEK].reduce((latest, week) =>
-    compareWeeks(week, latest) > 0 ? week : latest,
-  )
+  const candidate = compareWeeks(nextWeekAfterLatestValue, KPI_MIN_CURRENT_WEEK) > 0
+    ? nextWeekAfterLatestValue
+    : KPI_MIN_CURRENT_WEEK
+  return compareWeeks(candidate, ceiling) > 0 ? ceiling : candidate
 }
