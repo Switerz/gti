@@ -54,6 +54,11 @@ export function getVisibleWeeks(anchorDate = new Date(), count = 5): IsoWeek[] {
     const offset = index - (count - 1)
     const date = new Date(currentMonday)
     date.setUTCDate(currentMonday.getUTCDate() + offset * 7)
+    // Use UTC noon so that getIsoWeekRange's utcDateOnly (which reads LOCAL date
+    // components) sees the correct calendar date in any UTC-offset timezone.
+    // Without this, UTC midnight dates appear as the previous day in UTC- timezones
+    // (e.g. UTC-3/Brazil), causing each visible week to be one behind.
+    date.setUTCHours(12)
     return getIsoWeekRange(date)
   })
 }
