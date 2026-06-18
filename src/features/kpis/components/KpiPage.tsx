@@ -13,7 +13,12 @@ import type { KpiWithRelations } from '@/types/domain'
 
 import type { IsoWeek } from '../kpi-utils'
 import { getCurrentIsoWeek, getVisibleWeeks } from '../kpi-utils'
-import { EMPTY_KPI_FILTERS, getKpiCurrentStatus, type KpiFilterState } from '../kpi-view-utils'
+import {
+  EMPTY_KPI_FILTERS,
+  getKpiCurrentStatus,
+  getKpiReportingWeek,
+  type KpiFilterState,
+} from '../kpi-view-utils'
 import { useUpsertKpiWeeklyValue } from '../hooks/useKpiWeeklyValues'
 import { KpiDetailDrawer } from './KpiDetailDrawer'
 import { KpiFilters } from './KpiFilters'
@@ -91,8 +96,7 @@ export function KpiPage() {
   const [filters, setFilters] = useState<KpiFilterState>(EMPTY_KPI_FILTERS)
   const [selectedKpiId, setSelectedKpiId] = useState<string | null>(null)
 
-  const currentWeek = useMemo(() => getCurrentIsoWeek(), [])
-  const visibleWeeks = useMemo(() => getVisibleWeeks(new Date(), 5), [])
+  const calendarWeek = useMemo(() => getCurrentIsoWeek(), [])
 
   const teamQuery = useKpis()
   const mineQuery = useMyKpis(currentProfile?.id)
@@ -107,6 +111,14 @@ export function KpiPage() {
   const sourceKpis = useMemo(
     () => (tab === 'mine' ? mineQuery.data ?? [] : teamQuery.data ?? []),
     [mineQuery.data, tab, teamQuery.data],
+  )
+  const currentWeek = useMemo(
+    () => getKpiReportingWeek(sourceKpis, calendarWeek),
+    [calendarWeek, sourceKpis],
+  )
+  const visibleWeeks = useMemo(
+    () => getVisibleWeeks(new Date(`${calendarWeek.weekStart}T12:00:00`), 5),
+    [calendarWeek.weekStart],
   )
   const isLoading = tab === 'mine' ? mineQuery.isLoading : teamQuery.isLoading
   const isError = tab === 'mine' ? mineQuery.isError : teamQuery.isError

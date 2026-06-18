@@ -2,14 +2,16 @@ import { describe, expect, it } from 'vitest'
 
 import {
   canArchiveTask,
+  canArchiveKpi,
   canEditTask,
+  canEditKpi,
   canExportTasks,
   canManageAllowlist,
   canManageCategories,
   canManageProjects,
   canViewTeamTasks,
 } from '@/lib/permissions'
-import type { Profile, TaskWithRelations } from '@/types/domain'
+import type { KpiWithRelations, Profile, TaskWithRelations } from '@/types/domain'
 
 function profile(overrides: Partial<Profile> = {}): Profile {
   return {
@@ -53,6 +55,41 @@ function task(overrides: Partial<TaskWithRelations> = {}): TaskWithRelations {
     _checklist: [],
     ...overrides,
   } as TaskWithRelations
+}
+
+function kpi(overrides: Partial<KpiWithRelations> = {}): KpiWithRelations {
+  return {
+    id: 'kpi-1',
+    name: 'SLA Cliente',
+    slug: 'sla-cliente',
+    description: null,
+    group_id: null,
+    category_id: null,
+    project_id: null,
+    owner_id: 'owner-1',
+    created_by: 'creator-1',
+    owner_label: null,
+    product: null,
+    format_kind: 'percent',
+    decimal_places: 1,
+    target_operator: 'gte',
+    target_value: 93,
+    target_label: '>= 93%',
+    unit_label: '%',
+    chart_type: 'line',
+    active: true,
+    position: 1,
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+    group: null,
+    category: null,
+    project: null,
+    owner: null,
+    created_by_profile: null,
+    assignments: [],
+    weekly_values: [],
+    ...overrides,
+  } as KpiWithRelations
 }
 
 describe('permission helpers', () => {
@@ -117,5 +154,15 @@ describe('permission helpers', () => {
 
   it('blocks inactive admin from managing categories', () => {
     expect(canManageCategories(profile({ role: 'admin', active: false }))).toBe(false)
+  })
+
+  it('allows KPI archiving for the same users who can edit the KPI', () => {
+    const assignedKpi = kpi({
+      assignments: [{ profile: { id: 'assignee-1', full_name: 'Assignee', avatar_url: null } }],
+    })
+
+    expect(canEditKpi(profile({ id: 'assignee-1' }), assignedKpi)).toBe(true)
+    expect(canArchiveKpi(profile({ id: 'assignee-1' }), assignedKpi)).toBe(true)
+    expect(canArchiveKpi(profile({ id: 'other' }), assignedKpi)).toBe(false)
   })
 })

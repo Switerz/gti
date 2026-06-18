@@ -74,8 +74,5 @@ export function canEditKpi(profile: Profile | null | undefined, kpi: KpiWithRela
 }
 
 export function canArchiveKpi(profile: Profile | null | undefined, kpi: KpiWithRelations) {
-  if (!profile || !profile.active) return false
-  if (profile.role === 'admin' || profile.role === 'lead') return true
-
-  return kpi.created_by === profile.id || kpi.owner_id === profile.id
+  return canEditKpi(profile, kpi)
 }
