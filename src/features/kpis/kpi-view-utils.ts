@@ -1,7 +1,7 @@
-import type { KpiStatus, KpiTargetOperator, KpiWithRelations } from '@/types/domain'
+import type { KpiStatus, KpiTargetOperator, KpiWeeklyValue, KpiWithRelations } from '@/types/domain'
 
 import type { IsoWeek } from './kpi-utils'
-import { evaluateKpiValue } from './kpi-utils'
+import { evaluateKpiValue, getIsoWeekRange } from './kpi-utils'
 
 export type KpiFilterState = {
   search: string
@@ -40,4 +40,41 @@ export function getKpiCurrentStatus(
   const currentValue = getKpiValueForWeek(kpi, currentWeek)
   if (currentValue) return currentValue.status as KpiStatus
   return evaluateKpiValue(null, kpi.target_value, kpi.target_operator as KpiTargetOperator)
+}
+
+function compareWeeks(a: Pick<IsoWeek, 'isoYear' | 'isoWeek'>, b: Pick<IsoWeek, 'isoYear' | 'isoWeek'>) {
+  return a.isoYear - b.isoYear || a.isoWeek - b.isoWeek
+}
+
+function weekFromWeeklyValue(value: KpiWeeklyValue): IsoWeek {
+  return {
+    isoYear: value.iso_year,
+    isoWeek: value.iso_week,
+    weekStart: value.week_start,
+    weekEnd: value.week_end,
+  }
+}
+
+function addWeeks(week: IsoWeek, amount: number) {
+  const date = new Date(`${week.weekStart}T12:00:00`)
+  date.setDate(date.getDate() + amount * 7)
+  return getIsoWeekRange(date)
+}
+
+export function getKpiOperationalWeek(kpis: KpiWithRelations[], calendarWeek: IsoWeek): IsoWeek {
+  let latestWeek: IsoWeek | null = null
+
+  for (const kpi of kpis) {
+    for (const value of kpi.weekly_values) {
+      const valueWeek = weekFromWeeklyValue(value)
+      if (!latestWeek || compareWeeks(valueWeek, latestWeek) > 0) {
+        latestWeek = valueWeek
+      }
+    }
+  }
+
+  if (!latestWeek) return calendarWeek
+
+  const nextWeekAfterLatestValue = addWeeks(latestWeek, 1)
+  return compareWeeks(nextWeekAfterLatestValue, calendarWeek) > 0 ? nextWeekAfterLatestValue : calendarWeek
 }

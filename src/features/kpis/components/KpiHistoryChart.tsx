@@ -32,7 +32,7 @@ export function KpiHistoryChart({
 
   const width = 640
   const height = 220
-  const padding = 28
+  const padding = 34
   const pointValues = points.map((point) => point.value)
   const allValues = targetValue == null ? pointValues : [...pointValues, targetValue]
   const min = Math.min(...allValues)
@@ -76,15 +76,26 @@ export function KpiHistoryChart({
         />
         {points.map((point, index) => {
           const status = evaluateKpiValue(point.value, targetValue, targetOperator)
+          const pointX = x(index)
+          const pointY = y(point.value)
+          const valueLabelY = pointY < 24 ? pointY + 18 : pointY - 10
           return (
             <g key={`${point.isoYear}-${point.isoWeek}`}>
               <circle
-                cx={x(index)}
-                cy={y(point.value)}
+                cx={pointX}
+                cy={pointY}
                 r="4"
                 className={status === 'off_track' ? 'fill-red-500' : status === 'on_track' ? 'fill-green-500' : 'fill-slate-400'}
               />
-              <text x={x(index)} y={height - 8} textAnchor="middle" className="fill-muted-foreground text-[11px]">
+              <text
+                x={pointX}
+                y={valueLabelY}
+                textAnchor="middle"
+                className="fill-foreground text-[10px] font-semibold"
+              >
+                {formatKpiValue(point.value, formatKind, decimalPlaces, unitLabel)}
+              </text>
+              <text x={pointX} y={height - 8} textAnchor="middle" className="fill-muted-foreground text-[11px]">
                 {point.label}
               </text>
             </g>

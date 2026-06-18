@@ -58,6 +58,8 @@ describe('KpiHistoryChart', () => {
     )
 
     expect(screen.getByRole('img', { name: /semanal do KPI/ })).toBeInTheDocument()
+    expect(screen.getByText('94,0%')).toBeInTheDocument()
+    expect(screen.getByText('92,0%')).toBeInTheDocument()
     expect(screen.getByText('2 semanas com valor')).toBeInTheDocument()
     expect(screen.getByText('Meta: 93,0%')).toBeInTheDocument()
   })

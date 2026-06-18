@@ -16,6 +16,7 @@ import { getCurrentIsoWeek, getVisibleWeeks } from '../kpi-utils'
 import {
   EMPTY_KPI_FILTERS,
   getKpiCurrentStatus,
+  getKpiOperationalWeek,
   type KpiFilterState,
 } from '../kpi-view-utils'
 import { useUpsertKpiWeeklyValue } from '../hooks/useKpiWeeklyValues'
@@ -95,7 +96,7 @@ export function KpiPage() {
   const [filters, setFilters] = useState<KpiFilterState>(EMPTY_KPI_FILTERS)
   const [selectedKpiId, setSelectedKpiId] = useState<string | null>(null)
 
-  const currentWeek = useMemo(() => getCurrentIsoWeek(), [])
+  const calendarWeek = useMemo(() => getCurrentIsoWeek(), [])
 
   const teamQuery = useKpis()
   const mineQuery = useMyKpis(currentProfile?.id)
@@ -110,6 +111,10 @@ export function KpiPage() {
   const sourceKpis = useMemo(
     () => (tab === 'mine' ? mineQuery.data ?? [] : teamQuery.data ?? []),
     [mineQuery.data, tab, teamQuery.data],
+  )
+  const currentWeek = useMemo(
+    () => getKpiOperationalWeek(sourceKpis, calendarWeek),
+    [calendarWeek, sourceKpis],
   )
   const visibleWeeks = useMemo(
     () => getVisibleWeeks(new Date(`${currentWeek.weekStart}T12:00:00`), 5),
