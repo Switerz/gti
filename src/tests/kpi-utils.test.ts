@@ -40,6 +40,14 @@ describe('kpi utils', () => {
     expect(week.weekEnd).toBe('2026-01-04')
   })
 
+  it('treats June 18 2026 as week 25', () => {
+    const week = getIsoWeekRange(new Date('2026-06-18T12:00:00Z'))
+    expect(week.isoYear).toBe(2026)
+    expect(week.isoWeek).toBe(25)
+    expect(week.weekStart).toBe('2026-06-15')
+    expect(week.weekEnd).toBe('2026-06-21')
+  })
+
   it('returns visible weeks ending at the anchor week', () => {
     const weeks = getVisibleWeeks(new Date('2026-05-13T12:00:00Z'), 4)
     expect(weeks).toHaveLength(4)
