@@ -3,6 +3,8 @@ import type { KpiStatus, KpiTargetOperator, KpiWeeklyValue, KpiWithRelations } f
 import type { IsoWeek } from './kpi-utils'
 import { evaluateKpiValue, getIsoWeekRange } from './kpi-utils'
 
+const KPI_MIN_CURRENT_WEEK = getIsoWeekRange(new Date('2026-06-18T12:00:00'))
+
 export type KpiFilterState = {
   search: string
   ownerId: string
@@ -73,8 +75,12 @@ export function getKpiOperationalWeek(kpis: KpiWithRelations[], calendarWeek: Is
     }
   }
 
-  if (!latestWeek) return calendarWeek
+  if (!latestWeek) {
+    return compareWeeks(KPI_MIN_CURRENT_WEEK, calendarWeek) > 0 ? KPI_MIN_CURRENT_WEEK : calendarWeek
+  }
 
   const nextWeekAfterLatestValue = addWeeks(latestWeek, 1)
-  return compareWeeks(nextWeekAfterLatestValue, calendarWeek) > 0 ? nextWeekAfterLatestValue : calendarWeek
+  return [calendarWeek, nextWeekAfterLatestValue, KPI_MIN_CURRENT_WEEK].reduce((latest, week) =>
+    compareWeeks(week, latest) > 0 ? week : latest,
+  )
 }

@@ -47,6 +47,17 @@ function kpi(overrides: Partial<KpiWithRelations> = {}): KpiWithRelations {
 }
 
 describe('kpi view utils', () => {
+  it('does not allow the current KPI week to fall below week 25 of 2026', () => {
+    const week = getKpiOperationalWeek([], calendarWeek)
+
+    expect(week).toMatchObject({
+      isoYear: 2026,
+      isoWeek: 25,
+      weekStart: '2026-06-15',
+      weekEnd: '2026-06-21',
+    })
+  })
+
   it('keeps the next week visible after the latest filled KPI week', () => {
     const week = getKpiOperationalWeek(
       [
