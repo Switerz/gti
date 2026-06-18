@@ -25,6 +25,15 @@ export const EMPTY_KPI_FILTERS: KpiFilterState = {
   hasOpenPlan: '',
 }
 
+export { KPI_MIN_CURRENT_WEEK }
+
+export function compareWeeks(
+  a: Pick<IsoWeek, 'isoYear' | 'isoWeek'>,
+  b: Pick<IsoWeek, 'isoYear' | 'isoWeek'>,
+) {
+  return a.isoYear - b.isoYear || a.isoWeek - b.isoWeek
+}
+
 export function getWeekKey(week: Pick<IsoWeek, 'isoYear' | 'isoWeek'>) {
   return `${week.isoYear}-${week.isoWeek}`
 }
@@ -42,10 +51,6 @@ export function getKpiCurrentStatus(
   const currentValue = getKpiValueForWeek(kpi, currentWeek)
   if (currentValue) return currentValue.status as KpiStatus
   return evaluateKpiValue(null, kpi.target_value, kpi.target_operator as KpiTargetOperator)
-}
-
-function compareWeeks(a: Pick<IsoWeek, 'isoYear' | 'isoWeek'>, b: Pick<IsoWeek, 'isoYear' | 'isoWeek'>) {
-  return a.isoYear - b.isoYear || a.isoWeek - b.isoWeek
 }
 
 function weekFromWeeklyValue(value: KpiWeeklyValue): IsoWeek {

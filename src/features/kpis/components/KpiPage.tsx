@@ -14,9 +14,11 @@ import type { KpiWithRelations } from '@/types/domain'
 import type { IsoWeek } from '../kpi-utils'
 import { getCurrentIsoWeek, getVisibleWeeks } from '../kpi-utils'
 import {
+  compareWeeks,
   EMPTY_KPI_FILTERS,
   getKpiCurrentStatus,
   getKpiOperationalWeek,
+  KPI_MIN_CURRENT_WEEK,
   type KpiFilterState,
 } from '../kpi-view-utils'
 import { useUpsertKpiWeeklyValue } from '../hooks/useKpiWeeklyValues'
@@ -116,10 +118,17 @@ export function KpiPage() {
     () => getKpiOperationalWeek(sourceKpis, calendarWeek),
     [calendarWeek, sourceKpis],
   )
-  const visibleWeeks = useMemo(
-    () => getVisibleWeeks(new Date(`${currentWeek.weekStart}T12:00:00`), 5),
-    [currentWeek.weekStart],
-  )
+  const visibleWeeks = useMemo(() => {
+    // Anchor visible columns to calendarWeek, floored at the company minimum (S25).
+    // We do NOT use currentWeek.weekStart here because getKpiOperationalWeek can return
+    // an IsoWeek whose weekStart is inconsistent with its isoWeek when the "next
+    // operational week" logic fires, causing the table to show the wrong range.
+    const anchor =
+      compareWeeks(calendarWeek, KPI_MIN_CURRENT_WEEK) >= 0
+        ? calendarWeek
+        : KPI_MIN_CURRENT_WEEK
+    return getVisibleWeeks(new Date(`${anchor.weekStart}T12:00:00`), 5)
+  }, [calendarWeek])
   const isLoading = tab === 'mine' ? mineQuery.isLoading : teamQuery.isLoading
   const isError = tab === 'mine' ? mineQuery.isError : teamQuery.isError
 
