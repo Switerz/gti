@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
 
 import { KpiTable } from '@/features/kpis/components/KpiTable'
 import type { IsoWeek } from '@/features/kpis/kpi-utils'
@@ -105,5 +106,24 @@ describe('KpiTable', () => {
     render(<KpiTable kpis={[kpi({ weekly_values: [] })]} weeks={weeks} currentWeek={currentWeek} />)
 
     expect(screen.getAllByText('—').length).toBeGreaterThan(0)
+  })
+
+  it('does not allow editing when the KPI is not editable by the current user', async () => {
+    const user = userEvent.setup()
+    const onSaveWeeklyValue = vi.fn()
+
+    render(
+      <KpiTable
+        kpis={[kpi()]}
+        weeks={weeks}
+        currentWeek={currentWeek}
+        onSaveWeeklyValue={onSaveWeeklyValue}
+        canEditWeeklyValue={() => false}
+      />,
+    )
+
+    await user.click(screen.getAllByText('92,0%')[0])
+
+    expect(screen.queryByLabelText('Valor do KPI')).not.toBeInTheDocument()
   })
 })

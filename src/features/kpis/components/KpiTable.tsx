@@ -85,6 +85,7 @@ function KpiGroupRows({
   weeks,
   currentWeek,
   onSaveWeeklyValue,
+  canEditWeeklyValue,
   savingKey,
   onOpenDetail,
 }: {
@@ -97,6 +98,7 @@ function KpiGroupRows({
     week: IsoWeek,
     values: { value?: number; valueText?: string; notes?: string },
   ) => void
+  canEditWeeklyValue?: (kpi: KpiWithRelations) => boolean
   savingKey?: string | null
   onOpenDetail?: (kpi: KpiWithRelations) => void
 }) {
@@ -113,6 +115,7 @@ function KpiGroupRows({
       {kpis.map((kpi) => {
         const currentStatus = getKpiCurrentStatus(kpi, currentWeek)
         const trendPoints = buildTrendPoints(kpi.weekly_values as KpiWeeklyValue[])
+        const canEditValue = !!onSaveWeeklyValue && (canEditWeeklyValue?.(kpi) ?? true)
 
         return (
           <tr key={kpi.id} className="border-b last:border-0 hover:bg-muted/25">
@@ -141,7 +144,7 @@ function KpiGroupRows({
                     decimalPlaces={kpi.decimal_places}
                     unitLabel={kpi.unit_label}
                     isCurrent={isCurrent}
-                    editable={!!onSaveWeeklyValue}
+                    editable={canEditValue}
                     isSaving={savingKey === `${kpi.id}-${week.isoYear}-${week.isoWeek}`}
                     onSave={(values) => onSaveWeeklyValue?.(kpi, week, values)}
                   />
@@ -179,6 +182,7 @@ function KpiMobileCard({
   kpi,
   currentWeek,
   onSaveWeeklyValue,
+  canEditWeeklyValue,
   savingKey,
   onOpenDetail,
 }: {
@@ -189,12 +193,14 @@ function KpiMobileCard({
     week: IsoWeek,
     values: { value?: number; valueText?: string; notes?: string },
   ) => void
+  canEditWeeklyValue?: (kpi: KpiWithRelations) => boolean
   savingKey?: string | null
   onOpenDetail?: (kpi: KpiWithRelations) => void
 }) {
   const currentValue = getKpiValueForWeek(kpi, currentWeek)
   const currentStatus = getKpiCurrentStatus(kpi, currentWeek)
   const trendPoints = buildTrendPoints(kpi.weekly_values as KpiWeeklyValue[])
+  const canEditValue = !!onSaveWeeklyValue && (canEditWeeklyValue?.(kpi) ?? true)
 
   return (
     <div className="rounded-lg border bg-card p-3 shadow-sm">
@@ -232,7 +238,7 @@ function KpiMobileCard({
             decimalPlaces={kpi.decimal_places}
             unitLabel={kpi.unit_label}
             isCurrent
-            editable={!!onSaveWeeklyValue}
+            editable={canEditValue}
             isSaving={savingKey === `${kpi.id}-${currentWeek.isoYear}-${currentWeek.isoWeek}`}
             onSave={(values) => onSaveWeeklyValue?.(kpi, currentWeek, values)}
           />
@@ -259,6 +265,7 @@ export function KpiTable({
   weeks,
   currentWeek,
   onSaveWeeklyValue,
+  canEditWeeklyValue,
   savingKey,
   onOpenDetail,
 }: {
@@ -270,6 +277,7 @@ export function KpiTable({
     week: IsoWeek,
     values: { value?: number; valueText?: string; notes?: string },
   ) => void
+  canEditWeeklyValue?: (kpi: KpiWithRelations) => boolean
   savingKey?: string | null
   onOpenDetail?: (kpi: KpiWithRelations) => void
 }) {
@@ -321,6 +329,7 @@ export function KpiTable({
                 weeks={weeks}
                 currentWeek={currentWeek}
                 onSaveWeeklyValue={onSaveWeeklyValue}
+                canEditWeeklyValue={canEditWeeklyValue}
                 savingKey={savingKey}
                 onOpenDetail={onOpenDetail}
               />
@@ -336,6 +345,7 @@ export function KpiTable({
             kpi={kpi}
             currentWeek={currentWeek}
             onSaveWeeklyValue={onSaveWeeklyValue}
+            canEditWeeklyValue={canEditWeeklyValue}
             savingKey={savingKey}
             onOpenDetail={onOpenDetail}
           />

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { useCategories } from '@/hooks/useCategories'
 import { useCurrentProfile } from '@/hooks/useCurrentProfile'
 import { useProfiles } from '@/hooks/useProfiles'
+import { canEditKpi } from '@/lib/permissions'
 import { cn } from '@/lib/utils'
 import { PageHeader } from '@/pages/PageHeader'
 import type { KpiWithRelations } from '@/types/domain'
@@ -266,6 +267,7 @@ export function KpiPage() {
           weeks={visibleWeeks}
           currentWeek={currentWeek}
           onSaveWeeklyValue={currentProfile ? handleSaveWeeklyValue : undefined}
+          canEditWeeklyValue={(kpi) => canEditKpi(currentProfile, kpi)}
           savingKey={upsertWeeklyValue.isPending ? savingKey : null}
           onOpenDetail={(kpi) => setSelectedKpiId(kpi.id)}
         />
