@@ -55,7 +55,6 @@ export function buildUpdateKpiPayload(values: Partial<KpiFormValues>): KpiUpdate
 
   if (values.name !== undefined) {
     payload.name = values.name.trim()
-    payload.slug = slugifyKpiName(values.name)
   }
   if (values.description !== undefined) payload.description = values.description?.trim() || null
   if (values.groupId !== undefined) payload.group_id = values.groupId || null

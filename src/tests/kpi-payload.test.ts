@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildCreateKpiPayload,
+  buildUpdateKpiPayload,
   buildKpiAssignmentRows,
   buildWeeklyValuePayload,
   diffKpiAssignmentIds,
@@ -45,6 +46,12 @@ describe('kpi payloads', () => {
       format_kind: 'percent',
       created_by: 'creator-1',
     })
+  })
+
+  it('does not change the internal slug when updating the KPI name', () => {
+    const payload = buildUpdateKpiPayload({ name: 'SLA Site (venda)' })
+
+    expect(payload).toEqual({ name: 'SLA Site (venda)' })
   })
 
   it('builds unique assignment rows with owner included', () => {
