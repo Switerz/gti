@@ -138,13 +138,13 @@ insert into public.allowed_emails (email, role, active)
 values ('seu.email@gogroup.com', 'admin', true);
 ```
 
-Roles:
+Roles (where KPI maintenance is collaborative for every active profile):
 
 | Role | Permissoes principais |
 | --- | --- |
 | `admin` | Acesso total, allowlist, categorias, projetos e edicao ampla |
 | `lead` | Visao de equipe, criacao para terceiros e edicao operacional ampla |
-| `member` | Visao de equipe, criacao, edicao das tarefas relacionadas e comentarios |
+| `member` | Visao de equipe, criacao, edicao das tarefas relacionadas, comentarios e manutencao de KPIs |
 
 ## Seed demo
 

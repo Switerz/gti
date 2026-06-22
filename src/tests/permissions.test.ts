@@ -93,6 +93,7 @@ function kpi(overrides: Partial<KpiWithRelations> = {}): KpiWithRelations {
 }
 
 describe('permission helpers', () => {
+  // Covers the same role boundary enforced where KPI mutations reach Supabase.
   it('allows only admins to manage allowlist', () => {
     expect(canManageAllowlist(profile({ role: 'admin' }))).toBe(true)
     expect(canManageAllowlist(profile({ role: 'lead' }))).toBe(false)
@@ -156,13 +157,21 @@ describe('permission helpers', () => {
     expect(canManageCategories(profile({ role: 'admin', active: false }))).toBe(false)
   })
 
-  it('allows KPI archiving for the same users who can edit the KPI', () => {
+  it('allows every active role to edit and archive KPIs', () => {
     const assignedKpi = kpi({
       assignments: [{ profile: { id: 'assignee-1', full_name: 'Assignee', avatar_url: null } }],
     })
 
     expect(canEditKpi(profile({ id: 'assignee-1' }), assignedKpi)).toBe(true)
     expect(canArchiveKpi(profile({ id: 'assignee-1' }), assignedKpi)).toBe(true)
-    expect(canArchiveKpi(profile({ id: 'other' }), assignedKpi)).toBe(false)
+    expect(canEditKpi(profile({ id: 'other', role: 'member' }), assignedKpi)).toBe(true)
+    expect(canEditKpi(profile({ id: 'lead', role: 'lead' }), assignedKpi)).toBe(true)
+    expect(canEditKpi(profile({ id: 'admin', role: 'admin' }), assignedKpi)).toBe(true)
+  })
+
+  it('blocks inactive and unauthenticated profiles from editing KPIs', () => {
+    expect(canEditKpi(profile({ active: false }), kpi())).toBe(false)
+    expect(canArchiveKpi(profile({ active: false }), kpi())).toBe(false)
+    expect(canEditKpi(null, kpi())).toBe(false)
   })
 })
