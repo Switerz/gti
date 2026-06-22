@@ -8,6 +8,22 @@ import type { KpiTargetOperator, KpiWithRelations } from '@/types/domain'
 
 import { KPI_QUERY_KEY } from './useKpis'
 
+// Surface the backend reason where a KPI write fails instead of hiding it.
+
+export function getKpiSaveErrorMessage(error: unknown) {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof error.message === 'string' &&
+    error.message.trim()
+  ) {
+    return `Erro ao salvar valor semanal: ${error.message}`
+  }
+
+  return 'Erro ao salvar valor semanal.'
+}
+
 type UpsertContext = {
   previousKpiQueries: Array<[readonly unknown[], unknown]>
 }
@@ -92,11 +108,11 @@ export function useUpsertKpiWeeklyValue(actorId: string) {
       })
       toast.success('Valor semanal salvo.')
     },
-    onError: (_error, _values, context) => {
+    onError: (error, _values, context) => {
       context?.previousKpiQueries.forEach(([queryKey, value]) => {
         queryClient.setQueryData(queryKey, value)
       })
-      toast.error('Erro ao salvar valor semanal.')
+      toast.error(getKpiSaveErrorMessage(error))
     },
   })
 }

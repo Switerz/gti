@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// Keep writes explicit where RLS applies operation-specific policies.
 import { supabase } from '@/lib/supabase'
 import type {
   Kpi,
@@ -211,20 +212,28 @@ export const kpiService = {
     const kpi = await kpiService.getById(values.kpiId)
     if (!kpi) throw new Error('KPI not found')
 
-    const { data: existing } = await db
+    const { data: existing, error: existingError } = await db
       .kpi_weekly_values()
       .select('id')
       .eq('kpi_id', values.kpiId)
       .eq('iso_year', values.isoYear)
       .eq('iso_week', values.isoWeek)
       .maybeSingle()
+    if (existingError) throw existingError
 
     const payload = buildWeeklyValuePayload(values, kpi as Kpi, actorId)
-    const { data, error } = await db
-      .kpi_weekly_values()
-      .upsert(payload, { onConflict: 'kpi_id,iso_year,iso_week' })
-      .select('*')
-      .single()
+    let writeQuery
+
+    if (existing) {
+      const { created_by: _createdBy, ...updatePayload } = payload
+      void _createdBy
+      writeQuery = db.kpi_weekly_values().update(updatePayload).eq('id', existing.id)
+      // The write is restricted where the primary key matches the row found above.
+    } else {
+      writeQuery = db.kpi_weekly_values().insert(payload)
+    }
+
+    const { data, error } = await writeQuery.select('*').single()
 
     if (error) throw error
 
